@@ -85,10 +85,11 @@
     git = {
       enable = true;
       config = {
-        init.defaultBranch = "master";
+        init.defaultBranch = "main";
         user.name = "p-laranjinha";
         user.email = "plcasimiro2000@gmail.com";
 
+        credential.helper = "store";
         core.pager = "delta";
         interactive.diffFilter = "delta --color-only";
         delta = {
@@ -153,6 +154,7 @@
       ".config/tmux/plugins/tmux-which-key/config.yaml".source =
         funcs.mkMutableConfigSymlink ./tmux/which-key.yaml;
       ".config/tmux/scripts".source = funcs.mkMutableConfigSymlink ./tmux/scripts;
+      ".config/opencode/opencode.jsonc".source = funcs.mkMutableConfigSymlink ./opencode.jsonc;
 
       # Taken from the "foot" desktop file.
       # Maybe use pkgs.makeDesktopItem next time.
@@ -215,6 +217,12 @@
 
     # Calculator used by my zsh prompt to calculate run times.
     bc
+
+    # Adds the `git credential-oauth` command to authenticate to Forejo (and others) using OAuth.
+    git-credential-oauth
+
+    # AI coding agent with plugins for Neovim integration.
+    opencode
 
     # # You can also create simple shell scripts directly inside your
     # # configuration. For example, this adds a command 'my-hello' to your

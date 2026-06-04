@@ -43,7 +43,8 @@
           versioning = {
             type = "staggered";
             params = {
-              #cleanInterval = "604800"; # clean once per week
+              # cleanupIntervalS = "604800"; # clean once per week
+              # params.maxAge = "31536000"; # 1 year
               maxAge = "0"; # 1 year
             };
           };
@@ -58,7 +59,6 @@
           ];
           versioning = {
             type = "staggered";
-            #cleanupIntervalS = "604800"; # clean once per week
             params.maxAge = "0"; # forever
           };
         };
@@ -70,8 +70,7 @@
           ];
           versioning = {
             type = "staggered";
-            #cleanupIntervalS = "604800"; # clean once per week
-            params.maxAge = "31536000"; # 1 year
+            params.maxAge = "0"; # forever
           };
         };
         "tachiyomi-backup" = {
@@ -90,6 +89,17 @@
             "phone"
             "server"
           ];
+        };
+        "passwords" = {
+          id = "passwords";
+          path = "~/home/sync/passwords";
+          devices = [
+            "phone"
+          ];
+          versioning = {
+            type = "staggered";
+            params.maxAge = "0"; # forever
+          };
         };
       };
     };

@@ -64,3 +64,4 @@ x-scheme-handler/webcal=userapp-Thunderbird-G00LN3.desktop
 text/calendar=userapp-Thunderbird-G00LN3.desktop
 application/x-extension-ics=userapp-Thunderbird-G00LN3.desktop
 x-scheme-handler/webcals=userapp-Thunderbird-G00LN3.desktop
+x-scheme-handler/mailspring=Mailspring.desktop

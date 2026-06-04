@@ -1,2 +1,9 @@
 // DMS Window Rules - Managed by DankMaterialShell
 // Do not edit manually - changes may be overwritten
+
+// @id=wr_1777136771476788497 @name=Float my stone path pattern project window
+window-rule {
+    match title="^stone-path-pattern$"
+    open-floating true
+    geometry-corner-radius 0
+}
