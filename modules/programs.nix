@@ -149,7 +149,6 @@
     firefox
 
     # Password manager.
-    bitwarden-desktop
     keepassxc
 
     # Audio equalizer and other effects.

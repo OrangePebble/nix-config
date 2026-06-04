@@ -30,28 +30,28 @@
 
         # MouseTiler KWin Plugin
         # Based on https://github.com/NixOS/nixpkgs/blob/nixos-unstable/pkgs/by-name/po/polonium/package.nix
-        (stdenv.mkDerivation {
-          pname = "mousetiler";
-          version = "v5.2.0";
-
-          src = fetchurl {
-            url = "https://github.com/rxappdev/MouseTiler/releases/download/v5.2.0/mousetiler.kwinscript";
-            hash = "sha256-WF/7z8AXg/nR/Sh+0DWbWVi+emPihQMOdqNi6Y36Ep0=";
-          };
-
-          nativeBuildInputs = with libsForQt5; [ plasma-framework ];
-
-          dontUnpack = true;
-          dontWrapQtApps = true;
-
-          installPhase = ''
-            runHook preInstall
-
-            plasmapkg2 --install $src --packageroot $out/share/kwin/scripts
-
-            runHook postInstall
-          '';
-        })
+        # (stdenv.mkDerivation {
+        #   pname = "mousetiler";
+        #   version = "v5.2.0";
+        #
+        #   src = fetchurl {
+        #     url = "https://github.com/rxappdev/MouseTiler/releases/download/v5.2.0/mousetiler.kwinscript";
+        #     hash = "sha256-WF/7z8AXg/nR/Sh+0DWbWVi+emPihQMOdqNi6Y36Ep0=";
+        #   };
+        #
+        #   nativeBuildInputs = with libsForQt5; [ plasma-framework ];
+        #
+        #   dontUnpack = true;
+        #   dontWrapQtApps = true;
+        #
+        #   installPhase = ''
+        #     runHook preInstall
+        #
+        #     plasmapkg2 --install $src --packageroot $out/share/kwin/scripts
+        #
+        #     runHook postInstall
+        #   '';
+        # })
       ];
     };
 

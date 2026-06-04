@@ -21,7 +21,8 @@
 
     # A TUI music tagger.
     # Uses an overlay to import additional plugins.
-    pkgs-stable.beets
+    # WARN: Hopefully removing this from stable-pkgs works
+    beets
 
     # A TUI music downloader from multiple sources.
     streamrip

@@ -18,7 +18,7 @@
     gnumake # Required for LuaSnip.
     unzip # Used to install packages with Mason.
     cargo # Used to install the nil Nix LSP.
-    nodejs_25 # For the bash LSP.
+    nodejs # For the bash LSP.
     python315 # For the python linter and formatter.
     lsof # For the opencode plugin
 

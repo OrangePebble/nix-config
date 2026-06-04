@@ -84,7 +84,7 @@ gum log --time timeonly --level info "Rebuilding..."
 CURRENT_SYSTEM=$(readlink -f /run/current-system)
 DEFAULT_SYSTEM=$(readlink -f /nix/var/nix/profiles/system)
 if [[ "$CURRENT_SYSTEM" == "$DEFAULT_SYSTEM" ]]; then
-    sudo nixos-rebuild switch --flake .
+    sudo nixos-rebuild switch --flake . --show-trace
 else
     for SPECIALISATION in /nix/var/nix/profiles/system/specialisation/*; do
         if [[ "$(readlink -f "$SPECIALISATION")" == "$CURRENT_SYSTEM" ]]; then
