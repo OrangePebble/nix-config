@@ -199,13 +199,19 @@
     ];
   };
 
-  opts.autostartScripts.discord = ''
-    ${if config.opts.niri then "sleep 10" else ""}
-    ${lib.getExe pkgs.discord} --start-minimized
-  '';
-  opts.autostartScripts.easyeffects = ''
-    ${if config.opts.niri then "sleep 10" else ""}
-    ${lib.getExe pkgs.easyeffects} --hide-window
-  '';
+  opts.autostartScripts = {
+    discord = ''
+      ${if config.opts.niri then "sleep 10" else ""}
+      ${lib.getExe pkgs.discord} --start-minimized
+    '';
+    easyeffects = ''
+      ${if config.opts.niri then "sleep 10" else ""}
+      ${lib.getExe pkgs.easyeffects} --hide-window
+    '';
+    keepassxc = ''
+      ${if config.opts.niri then "sleep 10" else ""}
+      ${lib.getExe pkgs.keepassxc} --minimized
+    '';
+  };
   # opts.autostartSymlinks.discord = "${pkgs.discord}/share/applications/discord.desktop";
 }

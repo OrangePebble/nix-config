@@ -7,3 +7,15 @@ window-rule {
     open-floating true
     geometry-corner-radius 0
 }
+
+// @id=wr_1781463249534911655 @name=org.keepassxc.KeePassXC
+window-rule {
+    match app-id="^org.keepassxc.KeePassXC$" title="^Unlock Database - KeePassXC$"
+    open-floating true
+}
+
+// @id=wr_1781463306099103339 @name=org.keepassxc.KeePassXC
+window-rule {
+    match app-id="^org.keepassxc.KeePassXC$" title="^KeePassXC - Browser Access Request$"
+    open-floating true
+}

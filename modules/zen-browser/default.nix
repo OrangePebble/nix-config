@@ -145,6 +145,7 @@
               PersonalToolbar = [ ];
               zen-sidebar-top-buttons = [
                 "_446900e4-71c2-419f-a6a7-df9c091e268b_-browser-action" # Bitwarden
+                "keepassxc-browser_keepassxc_org-browser-action" # KeePassXC-Browser
               ];
               zen-sidebar-foot-buttons = [
                 "zen-toggle-compact-mode"
@@ -191,7 +192,7 @@
         # Tne flake has more info on how to install extensions.
         # https://github.com/0xc000022070/zen-browser-flake
         extensions.packages = with pkgs.nur.repos.rycee.firefox-addons; [
-          bitwarden
+          keepassxc-browser
           ublock-origin
           darkreader
           # The rest can just be installed by logging into the Firefox account.
