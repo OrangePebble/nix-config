@@ -1,6 +1,6 @@
 [submodule "neovim-config"]
 	path = modules/terminal/neovim/config
-	url = https://github.com/p-laranjinha/neovim-config
+	url = https://git.orangepebble.net/OrangePebble/neovim-config
 [submodule "essentia"]
 	path = modules/music/essentia
-	url = https://github.com/p-laranjinha/essentia-nix
+	url = https://git.orangepebble.net/OrangePebble/essentia-nix
