@@ -89,7 +89,13 @@
         user.name = "OrangePebble";
         user.email = "git@orangepebble.net";
 
-        credential.helper = "store";
+        credential.helper = [
+          # Keep credentials for 1 month.
+          # I could use 'store' for permanent storage, this keeps credentials in clear text at
+          #  ~/.git-credentials
+          "cache --timeout 2629800"
+          "oauth"
+        ];
         core.pager = "delta";
         interactive.diffFilter = "delta --color-only";
         delta = {

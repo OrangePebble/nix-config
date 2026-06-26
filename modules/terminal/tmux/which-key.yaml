@@ -275,7 +275,8 @@ items:
             command: run-shell $TMUX_PLUGIN_MANAGER_PATH/tpm/bindings/clean_plugins
       - name: Reload config
         key: r
-        command: source-file ~/.config/tmux/tmux.conf \; display-message "󰑓 Config
+        command:
+          source-file ~/.config/tmux/tmux.conf \; display-message "󰑓 Config
           reloaded"
       - name: Customize
         key: C
@@ -286,7 +287,7 @@ items:
     command: display-popup -E -w 75% -h 75% -d "#{pane_current_path}"
   - name: Toggle monitoring pane
     key: k
-    command: send-keys 'M-m'
+    command: run-shell "~/home/nix-config/modules/terminal/tmux/scripts/toggle_notify.sh"
   - name: Time
     key: t
     command: clock-mode
