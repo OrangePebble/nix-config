@@ -2,7 +2,7 @@
 command_alias_start_index: 200
 keybindings:
   # root_table: C-Space
-  prefix_table: a
+  prefix_table: /
 title:
   style: align=centre,bold
   prefix: which-key
@@ -14,10 +14,10 @@ custom_variables:
   - name: log_info
     value: "#[fg=green,italics] [info]#[default]#[italics]"
 macros:
-  - name: restart-pane
+  # Even though I'm not using macros, I need to have something here for which-key to work.
+  - name: placeholder
     commands:
-      - display "#{log_info} Restarting pane"
-      - "respawnp -k -c #{pane_current_path}"
+      - display "placeholder"
 items:
   # The idea is to have the key be the actual key after the prefix whenever possible.
   # Although for groups/menus it can be whatever.
@@ -190,9 +190,9 @@ items:
       - name: "[Capture]"
         key: C
         command: capture-pane
-      - name: "[Respawn pane]"
+      - name: "Respawn pane"
         key: R
-        macro: restart-pane
+        command: respawn-pane -k
       - name: Kill
         key: x
         command: 'confirm -p "Kill pane #P? (y/n)" killp'

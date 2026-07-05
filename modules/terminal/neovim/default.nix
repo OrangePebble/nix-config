@@ -38,14 +38,9 @@
   };
   hm = {
     home.file.".config/nvim".source = funcs.mkMutableConfigSymlink ./config;
-    home.file.".config/nvim2".source =
-      funcs.mkOutOfStoreSymlink "${vars.subHomeDirectory}/projects/neovim-config";
   };
   environment.shellAliases = {
     vi = "nvim";
     vim = "nvim";
-    vi2 = "NVIM_APPNAME=nvim2 nvvi";
-    vim2 = "NVIM_APPNAME=nvim2 nvim";
-    nvim2 = "NVIM_APPNAME=nvim2 nvim";
   };
 }
