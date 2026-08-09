@@ -120,7 +120,7 @@
 
     # Graphic editors.
     inkscape-with-extensions
-    graphite # inkscape alternative
+    # graphite # inkscape alternative, slows by rebuild too much
     gimp-with-plugins
     freecad
     blender
@@ -188,14 +188,15 @@
       "com.vscodium.codium"
 
       # Slicer for 3D printing.
-      rec {
-        appId = "com.orcaslicer.OrcaSlicer";
-        sha256 = "sha256-IfYEKWizi9GTqVo9P40h1IxNWSmU0pn7EN2qQrg7EKk=";
-        bundle = "${pkgs.fetchurl {
-          url = "https://github.com/OrcaSlicer/OrcaSlicer/releases/download/v2.4.2/OrcaSlicer-Linux-flatpak_V2.4.2_x86_64.flatpak";
-          inherit sha256;
-        }}";
-      }
+      "com.orcaslicer.OrcaSlicer"
+      # rec {
+      #   appId = "com.orcaslicer.OrcaSlicer";
+      #   sha256 = "sha256-IfYEKWizi9GTqVo9P40h1IxNWSmU0pn7EN2qQrg7EKk=";
+      #   bundle = "${pkgs.fetchurl {
+      #     url = "https://github.com/OrcaSlicer/OrcaSlicer/releases/download/v2.4.2/OrcaSlicer-Linux-flatpak_V2.4.2_x86_64.flatpak";
+      #     inherit sha256;
+      #   }}";
+      # }
     ];
   };
 

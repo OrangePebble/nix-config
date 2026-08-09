@@ -8,7 +8,7 @@
 }:
 {
   imports = [
-    inputs.dms-plugin-registry.modules.default
+    inputs.dms-plugin-registry.nixosModules.default
   ];
 
   config = lib.mkIf config.opts.niri {

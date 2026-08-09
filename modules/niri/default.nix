@@ -45,6 +45,7 @@
     };
     environment.sessionVariables = {
       GTK_USE_PORTAL = "1";
+      XDG_MENU_PREFIX = "plasma-";
     };
     xdg.portal = {
       xdgOpenUsePortal = true;

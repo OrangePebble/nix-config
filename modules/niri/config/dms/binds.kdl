@@ -5,11 +5,11 @@ binds {
     Ctrl+XF86AudioRaiseVolume allow-when-locked=true hotkey-overlay-title="Increase audio player volume" { spawn "dms" "ipc" "call" "mpris" "increment" "2"; }
     Mod+Comma hotkey-overlay-title="Settings" { spawn "dms" "ipc" "call" "settings" "focusOrToggle"; }
     Mod+Shift+Slash hotkey-overlay-title="Search keybinds" { spawn "dms" "ipc" "call" "spotlight" "toggleQuery" "?"; }
-    Mod+Space hotkey-overlay-title="Application launcher" { spawn "dms" "ipc" "call" "spotlight" "toggle"; }
+    Mod+Space hotkey-overlay-title="Spotlight Bar" { spawn "dms" "ipc" "call" "spotlight-bar" "toggle"; }
     Mod+V hotkey-overlay-title="Clipboard manager" { spawn "dms" "ipc" "call" "clipboard" "toggle"; }
     Mod+W hotkey-overlay-title="Create window rule" { spawn "dms" "ipc" "call" "window-rules" "toggle"; }
     Mod+X hotkey-overlay-title="Power menu" { spawn "dms" "ipc" "call" "powermenu" "toggle"; }
-    Shift+XF86AudioMute hotkey-overlay-title="Microphone mute toggle" allow-when-locked=true { spawn "dms" "ipc" "call" "audio" "micmute"; }
+    Shift+XF86AudioMute allow-when-locked=true hotkey-overlay-title="Microphone mute toggle" { spawn "dms" "ipc" "call" "audio" "micmute"; }
     Shift+XF86MonBrightnessDown cooldown-ms=1000 hotkey-overlay-title="Turn off side monitor" { spawn "sh" "-c" "dms ipc toast info 'Turning off monitor.' && niri msg output HDMI-A-1 off"; }
     Shift+XF86MonBrightnessUp hotkey-overlay-title="Turn on side monitor" { spawn "sh" "-c" "dms ipc toast info 'Turning on monitor.' && niri msg output HDMI-A-1 on"; }
     Super+N hotkey-overlay-title="Notepad" { spawn "dms" "ipc" "call" "notepad" "toggle"; }
@@ -21,7 +21,7 @@ binds {
     XF86AudioPause allow-when-locked=true hotkey-overlay-title="Play/Pause" { spawn "dms" "ipc" "call" "mpris" "playPause"; }
     XF86AudioPlay allow-when-locked=true hotkey-overlay-title="Play/Pause" { spawn "dms" "ipc" "call" "mpris" "playPause"; }
     XF86AudioPrev allow-when-locked=true hotkey-overlay-title="Play previous" { spawn "dms" "ipc" "call" "mpris" "previous"; }
-    XF86AudioRaiseVolume allow-when-locked=true hotkey-overlay-title="Increase volume" { spawn "dms" "ipc" "call" "audio" "increment" "2"; }
+    XF86AudioRaiseVolume hotkey-overlay-title="Increase volume" allow-when-locked=true { spawn "dms" "ipc" "call" "audio" "increment" "2"; }
     XF86MonBrightnessDown cooldown-ms=200 hotkey-overlay-title="Decrease side monitor brightness" { spawn "dms" "ipc" "brightness" "decrement" "10" "ddc:i2c-8"; }
     XF86MonBrightnessUp cooldown-ms=200 hotkey-overlay-title="Increase side monitor brightness" { spawn "dms" "ipc" "brightness" "increment" "10" "ddc:i2c-8"; }
     Mod+0 hotkey-overlay-title="Focus workspace 10" { focus-workspace 10; }
@@ -57,10 +57,10 @@ binds {
     Mod+Shift+Page_Down hotkey-overlay-title="Move column to workspace below" { move-column-to-workspace-down; }
     Mod+Shift+Page_Up hotkey-overlay-title="Move column to workspace above" { move-column-to-workspace-up; }
     Mod+Shift+U hotkey-overlay-title="Move column to workspace below" { move-column-to-workspace-down; }
-    Mod+Shift+WheelScrollDown hotkey-overlay-title="Move column to workspace below" cooldown-ms=150 { move-column-to-workspace-down; }
-    Mod+Shift+WheelScrollUp cooldown-ms=150 hotkey-overlay-title="Move column to workspace above" { move-column-to-workspace-up; }
+    Mod+Shift+WheelScrollDown cooldown-ms=150 hotkey-overlay-title="Move column to workspace below" { move-column-to-workspace-down; }
+    Mod+Shift+WheelScrollUp hotkey-overlay-title="Move column to workspace above" cooldown-ms=150 { move-column-to-workspace-up; }
     Mod+U hotkey-overlay-title="Focus workspace below" { focus-workspace-down; }
-    Mod+WheelScrollDown cooldown-ms=150 hotkey-overlay-title="Focus workspace below" { focus-workspace-down; }
+    Mod+WheelScrollDown hotkey-overlay-title="Focus workspace below" cooldown-ms=150 { focus-workspace-down; }
     Mod+WheelScrollUp cooldown-ms=150 hotkey-overlay-title="Focus workspace above" { focus-workspace-up; }
     Mod+Alt+M hotkey-overlay-title="Toggle tab column" { toggle-column-tabbed-display; }
     Mod+BracketLeft hotkey-overlay-title="Consume/expel window to the left" { consume-or-expel-window-left; }
@@ -128,8 +128,8 @@ binds {
     Ctrl+Print hotkey-overlay-title="Screenshot (current screen)" { screenshot-screen; }
     Mod+B hotkey-overlay-title="Open browser" { spawn "zen-beta"; }
     Mod+E hotkey-overlay-title="Open file explorer" { spawn "dolphin"; }
-    Mod+T hotkey-overlay-title="Open terminal" { spawn "foot" "tmux" "new" "-A"; }
     Mod+Shift+T hotkey-overlay-title="Open terminal" { spawn "foot"; }
+    Mod+T hotkey-overlay-title="Open terminal" { spawn "foot" "tmux" "new" "-A"; }
     Print hotkey-overlay-title="Screenshot (selected area)" { spawn "flameshot" "gui"; }
     Mod+Alt+K hotkey-overlay-title="Switch keyboard layout" { switch-layout "next"; }
     Mod+Escape allow-inhibiting=false hotkey-overlay-title="Toggle inhibit shortcuts" { toggle-keyboard-shortcuts-inhibit; }
