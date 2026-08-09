@@ -13,7 +13,7 @@
   "widgetBackgroundCustomColor": "#6750A4",
   "widgetBackgroundCustomStrength": 0.5,
   "widgetColorMode": "default",
-  "controlCenterTileColorMode": "primary",
+  "controlCenterTileColorMode": "primaryContainer",
   "buttonColorMode": "primary",
   "cornerRadius": 12,
   "niriLayoutGapsOverride": 8,

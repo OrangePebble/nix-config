@@ -27,7 +27,9 @@
       # dankActions.enable = true;
       # easyEffects.enable = true;
       # musicLyrics.enable = true;
-      # The following 2 aren't updating properly, so I'll just symlink to a repo "for now".
+
+      # WARN: The following 2 aren't updating properly, so I'll just symlink to a repo "for now".
+      #
       # amdGpuMonitorFork = {
       #   enable = true;
       #   src = pkgs.fetchFromGitHub {
