@@ -1,81 +1,63 @@
 /*
+* How to properly edit this file:
+*  https://docs.zen-browser.app/guides/live-editing
+*/
+
+/*
 * Changes the bookmarks to look like Essentials
 * From https://github.com/CMD-Golem/Zen-Browser-Mods
 */
 
-/* Remove default styles */
+/* Remove padding and background from the bookmarks area */
 #personal-bookmarks {
   padding: 0 !important;
 }
 #personal-bookmarks:hover {
   background-color: transparent !important;
 }
+
+/* Centers the icons when the bookmark has no name */
 .toolbarbutton-text[value=""] {
   display: none !important;
 }
 
-/* Warp Bookmarks */
+/* Make the bookmarks area be a 3 wide grid */
 #PlacesToolbarItems {
   display: grid;
-  grid-template-columns: repeat(3, 1fr); /* Number of columns */
-  margin-top: 5px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  padding-top: 6px;
 }
 
-/* Horizontal line */
-#PlacesToolbar {
-  flex-direction: column;
-}
-
-/* #PlacesToolbar:after { */
-/*   content: ""; */
-/*   width: calc(100% - 3px); */
-/*   height: 1px; */
-/*   margin-top: 5px; */
-/*   margin-bottom: 8px; */
-/*   display: block; */
-/*   height: 1px; */
-/*   background: light-dark(rgba(1, 1, 1, 0.075), rgba(255, 255, 255, 0.1)); */
-/* } */
-
-/* Style Bookmark items */
+/* Styling */
 toolbarbutton.bookmark-item:not(.subviewbutton):not(
     #bookmarks-toolbar-placeholder
   ) {
   height: 36px !important;
-  width: calc(100% -1px) !important;
-  background-color: var(--tab-hover-background-color) !important;
-}
-toolbarbutton.bookmark-item:not(.subviewbutton):not(
-    #bookmarks-toolbar-placeholder
-  )
-  image {
-  width: 18px !important;
-  height: 18px !important;
+  max-width: 100vw !important; /* Remove width limit */
+  background-color: var(--zen-toolbar-element-bg) !important;
+  border-radius: var(--border-radius-medium) !important;
 }
 toolbarbutton.bookmark-item:not(.subviewbutton):not(
     #bookmarks-toolbar-placeholder
   ):hover {
-  background-color: var(--tab-selected-bgcolor) !important;
+  background-color: var(--zen-toolbar-element-bg-hover) !important;
 }
 
-/* Expand bookmarks with text */
+/* Make bookmarks with text take 2 columns and more styling */
+/* I wanted to make both the text and icon be centered but too much work for something I won't use */
 toolbarbutton.bookmark-item:not(.subviewbutton):not(
     #bookmarks-toolbar-placeholder
   ):not([label=""]) {
   grid-column: auto / span 2;
+  padding-left: 9px !important;
+  padding-right: 9px !important;
 }
 toolbarbutton.bookmark-item:not(.subviewbutton):not(
     #bookmarks-toolbar-placeholder
   ):not([label=""])
   image {
-  margin-left: 5px;
-  margin-right: 5.5px !important;
-}
-
-/* Hide open all in tabs*/
-.bookmarks-actions-menuseparator,
-.openintabs-menuitem {
-  display: none;
+  margin-right: 5px !important;
 }
 
 /*
