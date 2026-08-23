@@ -19,3 +19,9 @@ window-rule {
     match app-id="^org.keepassxc.KeePassXC$" title="^KeePassXC - Browser Access Request$"
     open-floating true
 }
+
+// @id=wr_1787496121911499096 @name=md.Obsidian
+window-rule {
+    match app-id="^md.Obsidian$" title="^Settings"
+    open-floating true
+}

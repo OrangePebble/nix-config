@@ -37,11 +37,6 @@
   # Install flatpak binary.
   services.flatpak.enable = true;
 
-  hardware.logitech.wireless = {
-    enable = true;
-    enableGraphical = true;
-  };
-
   programs =
     let
       # https://nixos.wiki/wiki/Games
@@ -81,7 +76,10 @@
         remotePlay.openFirewall = true;
         localNetworkGameTransfers.openFirewall = true;
       };
+
+      solaar.enable = true;
     };
+  hardware.logitech.wireless.enable = true;
 
   fonts.packages = with pkgs; [
     # My old monofont/programming font.
@@ -91,6 +89,22 @@
     # A good font for CAD/3D printing.
     # A nerd-fonts variant also exists.
     overpass
+    # A minecraft themed font that I'm manually patching with nerdfonts.
+    # This package already includes a nerd font patch but I want to remove ligatures.
+    # A good alternative for a blocky-looking font is Scientifica.
+    # https://wiki.nixos.org/wiki/Fonts#Patching_nerdfonts_into_fonts
+    # https://github.com/ryanoasis/nerd-fonts/tree/master#font-patcher
+    (monocraft.overrideAttrs (o: {
+      nativeBuildInputs = [ nerd-font-patcher ];
+      postInstall = ''
+        mkdir -p $out/share/fonts/truetype/{monocraft,monocraft-nerd}
+        mv $out/share/fonts/truetype/*Monocraft.ttc $out/share/fonts/truetype/monocraft/
+        rm $out/share/fonts/truetype/*.ttc
+        for f in $out/share/fonts/truetype/monocraft/*.ttc; do
+          nerd-font-patcher --complete --careful --removeligatures --outputdir $out/share/fonts/truetype/monocraft-nerd/ $f
+        done
+      '';
+    }))
   ];
 
   environment.systemPackages = with pkgs; [
@@ -109,7 +123,7 @@
 
     # Document editors.
     kdePackages.kate
-    libreoffice-qt6-fresh
+    libreoffice-qt-stable
     obsidian
 
     # Find LaTeX symbols by sketching them.
