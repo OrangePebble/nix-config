@@ -19,6 +19,8 @@ zvm_after_init_commands+=('source <(fzf --zsh)')
 
 source "$ZSH_VI_MODE_PLUGIN_FILE"
 
+eval "$(batman --export-env)"
+
 # https://discourse.nixos.org/t/nix-shell-does-not-use-my-users-shell-zsh/5588/13
 # Makes nix-shell and nix develop use ZSH.
 # alias nix-shell='nix-shell --run $SHELL'

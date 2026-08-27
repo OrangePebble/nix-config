@@ -220,6 +220,8 @@
 
     # 'cat' replacement with syntax highlighting.
     bat
+    # A 'bat' utility to highlight man pages.
+    bat-extras.batman
 
     # Calculator used by my zsh prompt to calculate run times.
     bc

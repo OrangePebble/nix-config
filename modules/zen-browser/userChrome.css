@@ -60,6 +60,17 @@ toolbarbutton.bookmark-item:not(.subviewbutton):not(
   margin-right: 5px !important;
 }
 
+/* Hide "Open All in Tabs" button and separator above it in a bookmark folder's popup */
+.bookmarks-actions-menuseparator,
+.openintabs-menuitem {
+  display: none;
+}
+
+/* Hide arrow/chevron that sometimes shows up besides the bookmarks. */
+#PlacesChevron {
+  display: none;
+}
+
 /*
 * Cleans up theunified extensions menu
 * From https://github.com/KiKaraage/ZenMods/blob/main/Lean/chrome.css
