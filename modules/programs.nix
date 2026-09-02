@@ -90,21 +90,20 @@
     # A nerd-fonts variant also exists.
     overpass
     # A minecraft themed font that I'm manually patching with nerdfonts.
-    # This package already includes a nerd font patch but I want to remove ligatures.
     # A good alternative for a blocky-looking font is Scientifica.
     # https://wiki.nixos.org/wiki/Fonts#Patching_nerdfonts_into_fonts
     # https://github.com/ryanoasis/nerd-fonts/tree/master#font-patcher
-    (monocraft.overrideAttrs (o: {
-      nativeBuildInputs = [ nerd-font-patcher ];
-      postInstall = ''
-        mkdir -p $out/share/fonts/truetype/{monocraft,monocraft-nerd}
-        mv $out/share/fonts/truetype/*Monocraft.ttc $out/share/fonts/truetype/monocraft/
-        rm $out/share/fonts/truetype/*.ttc
-        for f in $out/share/fonts/truetype/monocraft/*.ttc; do
-          nerd-font-patcher --complete --careful --removeligatures --outputdir $out/share/fonts/truetype/monocraft-nerd/ $f
-        done
-      '';
-    }))
+    # (monocraft.overrideAttrs (o: {
+    #   nativeBuildInputs = [ nerd-font-patcher ];
+    #   postInstall = ''
+    #     mkdir -p $out/share/fonts/truetype/{monocraft,monocraft-nerd}
+    #     mv $out/share/fonts/truetype/*Monocraft.ttc $out/share/fonts/truetype/monocraft/
+    #     rm $out/share/fonts/truetype/*.ttc
+    #     for f in $out/share/fonts/truetype/monocraft/*.ttc; do
+    #       nerd-font-patcher --complete --careful --outputdir $out/share/fonts/truetype/monocraft-nerd/ $f
+    #     done
+    #   '';
+    # }))
   ];
 
   environment.systemPackages = with pkgs; [
