@@ -55,12 +55,13 @@
       "file *": "allow",
       "stat *": "allow",
       "nix --version": "allow",
-      "ls *": "allow",
       "which *": "allow",
       "pwd": "allow",
       "whoami": "allow",
       "date": "allow",
-      "uname *": "allow"
+      "uname *": "allow",
+      "test *": "allow",
+      "printf *": "allow"
     },
     "external_directory": {
       "*": "ask"

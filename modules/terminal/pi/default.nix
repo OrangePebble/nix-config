@@ -28,9 +28,14 @@
     home.activation.installPiPackages = lib.hm.dag.entryAfter [ "writeBoundary" ] (
       let
         packages = [
+          "npm:@nguyenquangthai/pi-omp-theme@1.0.12"
           "npm:@gotgenes/pi-permission-system@31.1.3"
           "npm:@dietrichgebert/ponytail@4.9.0"
           "npm:donsetch@4.1.0"
+          "npm:@juicesharp/rpiv-ask-user-question@2.10.1"
+          "npm:@juicesharp/rpiv-todo@2.10.1"
+          # "npm:@juicesharp/rpiv-advisor@2.10.1"
+          # "npm:context-mode@1.0.169" # Useful but doesn't mesh well with the permission system
         ];
       in
       #bash
