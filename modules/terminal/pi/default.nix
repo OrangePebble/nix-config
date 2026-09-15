@@ -34,6 +34,7 @@
           "npm:donsetch@4.1.0"
           "npm:@juicesharp/rpiv-ask-user-question@2.10.1"
           "npm:@juicesharp/rpiv-todo@2.10.1"
+          "npm:pi-scroll-speed@0.2.0"
           # "npm:@juicesharp/rpiv-advisor@2.10.1"
           # "npm:context-mode@1.0.169" # Useful but doesn't mesh well with the permission system
         ];

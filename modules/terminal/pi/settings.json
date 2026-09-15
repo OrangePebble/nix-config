@@ -5,11 +5,28 @@
     "npm:donsetch@4.1.0",
     "npm:@juicesharp/rpiv-ask-user-question@2.10.1",
     "npm:@juicesharp/rpiv-todo@2.10.1",
-    "npm:@nguyenquangthai/pi-omp-theme@1.0.12"
+    "npm:@nguyenquangthai/pi-omp-theme@1.0.12",
+    "npm:pi-scroll-speed@0.2.0"
   ],
-  "defaultTools": ["read", "bash", "edit", "write", "grep", "find", "ls"],
+  "defaultTools": [
+    "read",
+    "bash",
+    "edit",
+    "write",
+    "grep",
+    "find",
+    "ls"
+  ],
   "defaultProvider": "github-copilot",
   "defaultModel": "gpt-5.6-terra",
+  "tuiMode": "fullscreen",
+  "fullscreenExitOutput": "resume-hint",
+  "scrollSpeed": {
+    "wheelLines": 3
+  },
+  "terminal": {
+    "showTerminalProgress": true
+  },
   "theme": "titanium",
   "piOmpTheme": {
     "enabled": true,
@@ -24,9 +41,17 @@
       "enabled": true,
       "separator": "|",
       "layout": {
-        "left": ["model_effort", "path"],
-        "right": ["claude_context", "cost"],
-        "secondary": ["extension_statuses"]
+        "left": [
+          "model_effort",
+          "path"
+        ],
+        "right": [
+          "claude_context",
+          "cost"
+        ],
+        "secondary": [
+          "extension_statuses"
+        ]
       },
       "disabledSegments": [],
       "customItems": [],
@@ -56,5 +81,6 @@
       "preferExistingFooter": true
     }
   },
+  "enableInstallTelemetry": false,
   "lastChangelogVersion": "0.85.1"
 }
