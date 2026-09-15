@@ -1,16 +1,66 @@
 {
   "permission": {
     "*": "ask",
+    "read": "allow",
+    "find": "allow",
+    "grep": "allow",
+    "ls": "allow",
+    "web_fetch": "allow",
+    "web_search": "allow",
+    "web_crawl": "allow",
+    "skill": {
+      "*": "allow"
+    },
     "path": {
-      "*": "allow",
       "*.env": "deny",
       "*.env.*": "deny",
+      ".envrc": "deny",
+      ".netrc": "deny",
+      "_netrc": "deny",
+      "credentials": "deny",
+      "id_rsa": "deny",
+      "id_ecdsa": "deny",
+      "id_ed25519": "deny",
+      "id_dsa": "deny",
+      "identity": "deny",
+      "*.pem": "deny",
+      "*.key": "deny",
+      "*.p12": "deny",
+      "*.pfx": "deny",
+      ".zsh_history": "deny",
+      "~/.ssh": "deny",
+      "~/.ssh/*": "deny",
+      "~/.gnupg": "deny",
+      "~/.gnupg/*": "deny"
+    },
+    "path_read": {
+      "*": "allow",
       "*.env.example": "allow"
     },
     "bash": {
       "*": "ask",
-      "rm -rf *": "deny",
-      "sudo *": "ask"
+      "cat *": "allow",
+      "head *": "allow",
+      "tail *": "allow",
+      "wc *": "allow",
+      "diff *": "allow",
+      "git status *": "allow",
+      "git diff *": "allow",
+      "git log *": "allow",
+      "git show *": "allow",
+      "git rev-parse *": "allow",
+      "basename *": "allow",
+      "dirname *": "allow",
+      "realpath *": "allow",
+      "file *": "allow",
+      "stat *": "allow",
+      "nix --version": "allow",
+      "ls *": "allow",
+      "which *": "allow",
+      "pwd": "allow",
+      "whoami": "allow",
+      "date": "allow",
+      "uname *": "allow"
     },
     "external_directory": {
       "*": "ask"
@@ -19,7 +69,8 @@
       "~/home/nix-config/*": "allow",
       "~/.config/nvim/*": "allow",
       "~/.config/tmux/*": "allow",
-      "/nix/store": "allow"
+      "~/.config/pi/*": "allow",
+      "/nix/store/*": "allow"
     }
   }
 }

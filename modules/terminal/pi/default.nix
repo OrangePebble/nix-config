@@ -2,6 +2,7 @@
   config,
   inputs,
   lib,
+  pkgs,
   vars,
   funcs,
   ...
@@ -20,6 +21,7 @@
     home.file = {
       ".config/pi/extensions/pi-permission-system/config.json".source =
         funcs.mkMutableConfigSymlink ./permission-system-conf.json;
+      ".config/pi/settings.json".source = funcs.mkMutableConfigSymlink ./settings.json;
     };
 
     # Slop that installs packages and uninstalls any package that isn't in "packages".
@@ -28,12 +30,20 @@
         packages = [
           "npm:@gotgenes/pi-permission-system@31.1.3"
           "npm:@dietrichgebert/ponytail@4.9.0"
+          "npm:donsetch@4.1.0"
         ];
       in
-      #shell
+      #bash
       ''
         pi() {
-          PI_CODING_AGENT_DIR=${lib.escapeShellArg "${config.hm.xdg.configHome}/pi"} \
+          # Added dependencies to the path because it was required to install donsetch
+          PATH=${
+            lib.makeBinPath [
+              pkgs.gnutar
+              pkgs.gzip
+            ]
+          }:"$PATH" \
+            PI_CODING_AGENT_DIR=${lib.escapeShellArg "${config.hm.xdg.configHome}/pi"} \
             ${config.hm.programs.pi.coding-agent.package}/bin/pi "$@"
         }
 
