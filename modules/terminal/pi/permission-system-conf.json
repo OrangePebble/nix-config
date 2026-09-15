@@ -1,0 +1,25 @@
+{
+  "permission": {
+    "*": "ask",
+    "path": {
+      "*": "allow",
+      "*.env": "deny",
+      "*.env.*": "deny",
+      "*.env.example": "allow"
+    },
+    "bash": {
+      "*": "ask",
+      "rm -rf *": "deny",
+      "sudo *": "ask"
+    },
+    "external_directory": {
+      "*": "ask"
+    },
+    "external_directory_read": {
+      "~/home/nix-config/*": "allow",
+      "~/.config/nvim/*": "allow",
+      "~/.config/tmux/*": "allow",
+      "/nix/store": "allow"
+    }
+  }
+}

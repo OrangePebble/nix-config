@@ -8,6 +8,7 @@
 {
   imports = [
     ./neovim
+    ./pi
 
     # Tool to locate the nixpkgs package providing a certain file. Used by comma.
     # Unlike regular nix-index, this one includes an automatically updated database, and so I don't
