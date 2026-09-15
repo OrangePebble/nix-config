@@ -73,6 +73,7 @@
       // "wc *": "allow",
     },
   },
+  "default_agent": "ask",
   "agent": {
     "build": { "color": "success" },
     "plan": { "color": "warning" },

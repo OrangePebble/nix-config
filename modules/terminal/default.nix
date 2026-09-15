@@ -161,6 +161,7 @@
         funcs.mkMutableConfigSymlink ./tmux/which-key.yaml;
       ".config/tmux/scripts".source = funcs.mkMutableConfigSymlink ./tmux/scripts;
       ".config/opencode/opencode.jsonc".source = funcs.mkMutableConfigSymlink ./opencode.jsonc;
+      ".config/bat/config".source = funcs.mkMutableConfigSymlink ./bat-config;
 
       # Taken from the "foot" desktop file.
       # Maybe use pkgs.makeDesktopItem next time.
