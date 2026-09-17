@@ -20,6 +20,7 @@
  *   {"id":"...","type":"subscribe"}
  *   {"id":"...","type":"prompt","message":"...", "delivery":"steer"}
  *   {"id":"...","type":"prompt","message":"...", "delivery":"followUp"}
+ *   {"id":"...","type":"append_editor_text","message":"..."}
  *
  * Responses:
  *   {"id":"...","type":"response","success":true,"data":...}
@@ -146,6 +147,24 @@ export default function (pi: ExtensionAPI) {
         subscribers.add(socket);
         respond(socket, id, { subscribed: true, instance: metadata(), idle: context?.isIdle() ?? false });
         return;
+
+      case "append_editor_text": {
+        if (typeof request.message !== "string") {
+          fail(socket, id, "append_editor_text.message must be a string");
+          return;
+        }
+        if (!context) {
+          fail(socket, id, "Pi session is not ready");
+          return;
+        }
+        context.ui.setEditorText(`${context.ui.getEditorText()}${request.message}`);
+        // Pi's setEditorText() updates editor state but does not schedule a
+        // TUI redraw. A cleared, extension-owned status key does schedule one
+        // without leaving any visible footer entry.
+        context.ui.setStatus("pi-socket-editor-refresh", undefined);
+        respond(socket, id, { accepted: true });
+        return;
+      }
 
       case "prompt": {
         if (typeof request.message !== "string" || request.message.trim().length === 0) {

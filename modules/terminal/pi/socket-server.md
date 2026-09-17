@@ -64,6 +64,14 @@ Forwarded events are `agent_*`, `turn_*`, `message_*`, `tool_execution_*`, model
 
 The prompt is submitted with `pi.sendUserMessage(..., { expandPromptTemplates: true })`, so extension commands, skills, and prompt templates can expand. It is an extension-originated prompt, not the private built-in RPC `prompt` path.
 
+### Append text to Pi's editor without submitting it
+
+```json
+{"id": 4, "type": "append_editor_text", "message": "Draft prompt "}
+```
+
+This appends `message` to the current Pi TUI editor text without starting an agent turn. The Neovim client uses this request automatically when its input is submitted with a trailing space.
+
 ## Minimal shell examples
 
 List candidate instances:
