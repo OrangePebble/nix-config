@@ -85,7 +85,7 @@ export default function (pi: ExtensionAPI) {
   let server: Server | undefined;
   let socketFile: string | undefined;
   let context: ExtensionContext | undefined;
-  let startedAt: string | undefined;
+  let startedAt: number | undefined;
   const connections = new Set<Socket>();
   const subscribers = new Set<Socket>();
 
@@ -223,7 +223,7 @@ export default function (pi: ExtensionAPI) {
   pi.on("session_start", async (_event, ctx) => {
     if (ctx.mode !== "tui") return;
     context = ctx;
-    startedAt = new Date().toISOString();
+    startedAt = Math.floor(Date.now() / 1000);
 
     const directory = socketDirectory();
     await mkdir(directory, { recursive: true, mode: 0o700 });
@@ -252,6 +252,13 @@ export default function (pi: ExtensionAPI) {
       broadcast(eventName, event);
     });
   }
+
+  // pi-permission-system emits this documented cross-extension event exactly
+  // before it presents an ask-permission UI. Forward it when that extension is
+  // installed; registering the listener is harmless when it is absent.
+  pi.events.on("permissions:ui_prompt", (event) => {
+    broadcast("permissions:ui_prompt", event);
+  });
 
   pi.on("session_shutdown", async (event) => {
     broadcast("session_shutdown", event);

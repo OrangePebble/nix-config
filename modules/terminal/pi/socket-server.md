@@ -16,7 +16,7 @@ If `XDG_RUNTIME_DIR` is unavailable, the fallback is:
 /tmp/pi-<uid>-sockets/<session-id>.sock
 ```
 
-A client lists `*.sock` files, connects to each candidate, and sends `get_info`. The response contains current metadata: protocol version, process ID, start time, socket path, session ID/file/name, working directory, mode, model, and thinking level. This avoids stale metadata after an unclean Pi exit.
+A client lists `*.sock` files, connects to each candidate, and sends `get_info`. The response contains current metadata: protocol version, process ID, `startedAt` (a Unix timestamp in seconds), socket path, session ID/file/name, working directory, mode, model, and thinking level. This avoids stale metadata after an unclean Pi exit.
 
 The directory is `0700` and each socket is `0600`. The socket is an agent-control interface: do not move it to a shared directory or relax these permissions without adding authentication.
 
@@ -49,7 +49,7 @@ The connection remains open and receives events from the whole TUI session, whet
 {"type":"event","event":"agent_settled","data":{}}
 ```
 
-Forwarded events are `agent_*`, `turn_*`, `message_*`, `tool_execution_*`, model/thinking changes, and compaction results. On normal session shutdown the server sends one `session_shutdown` event and closes subscribers.
+Forwarded events are `agent_*`, `turn_*`, `message_*`, `tool_execution_*`, model/thinking changes, and compaction results. When `@gotgenes/pi-permission-system` is installed, its documented `permissions:ui_prompt` event is forwarded immediately before its permission UI opens. On normal session shutdown the server sends one `session_shutdown` event and closes subscribers.
 
 ### Send a prompt
 
