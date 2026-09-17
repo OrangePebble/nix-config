@@ -282,7 +282,9 @@ export default function (pi: ExtensionAPI) {
 
   pi.on("session_shutdown", async (event) => {
     broadcast("session_shutdown", event);
-    for (const connection of connections) connection.destroy();
+    // End gracefully so the queued session_shutdown event is flushed before
+    // Pi tears down this extension runtime (for example during /reload).
+    for (const connection of connections) connection.end();
     connections.clear();
     subscribers.clear();
 
