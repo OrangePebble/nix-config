@@ -43,6 +43,7 @@ const EVENT_NAMES = [
   "agent_start",
   "agent_end",
   "agent_settled",
+  "ui_prompt_start",
   "turn_start",
   "turn_end",
   "message_start",

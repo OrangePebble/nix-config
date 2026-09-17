@@ -49,7 +49,7 @@ The connection remains open and receives events from the whole TUI session, whet
 {"type":"event","event":"agent_settled","data":{}}
 ```
 
-Forwarded events are `agent_*`, `turn_*`, `message_*`, `tool_execution_*`, model/thinking changes, and compaction results. When `@gotgenes/pi-permission-system` is installed, its documented `permissions:ui_prompt` event is forwarded immediately before its permission UI opens. On normal session shutdown the server sends one `session_shutdown` event and closes subscribers.
+Forwarded events are `agent_*`, `turn_*`, `message_*`, `tool_execution_*`, and `ui_prompt_start`, plus model/thinking changes and compaction results. When `@gotgenes/pi-permission-system` is installed, its documented `permissions:ui_prompt` event is forwarded immediately before its permission UI opens. On normal session shutdown the server sends one `session_shutdown` event and closes subscribers.
 
 ### Send a prompt
 
