@@ -18,25 +18,36 @@
       environment.PI_CODING_AGENT_DIR.value = "${config.hm.xdg.configHome}/pi";
     };
 
+    home.packages = [
+      (pkgs.writeShellScriptBin "donsetch" ''
+        exec "${config.hm.xdg.configHome}/pi/npm/node_modules/donsetch/binaries/donsetch" "$@"
+      '')
+    ];
+
     home.file = {
       ".config/pi/extensions/pi-permission-system/config.json".source =
-        funcs.mkMutableConfigSymlink ./permission-system-conf.json;
+        funcs.mkMutableConfigSymlink ./permission-system-conf.jsonc;
+      ".config/pi/extensions/custom-footer.ts".source = funcs.mkMutableConfigSymlink ./custom-footer.ts;
+      ".config/pi/extensions/custom-editor.ts".source = funcs.mkMutableConfigSymlink ./custom-editor.ts;
+      ".config/pi/extensions/donsetch-fixes.ts".source = funcs.mkMutableConfigSymlink ./donsetch-fixes.ts;
       ".config/pi/settings.json".source = funcs.mkMutableConfigSymlink ./settings.json;
+      ".config/pi/APPEND_SYSTEM.md".source = funcs.mkMutableConfigSymlink ./APPEND_SYSTEM.md;
+      ".config/donsetch/donsetch.toml".text = ''
+        [browser]
+        chromium_path = "${pkgs.chromium}/bin/chromium"
+      '';
+      ".config/rpiv-todo/config.json".text = ''{ "maxWidgetLines": 5 }'';
     };
 
     # Slop that installs packages and uninstalls any package that isn't in "packages".
     home.activation.installPiPackages = lib.hm.dag.entryAfter [ "writeBoundary" ] (
       let
         packages = [
-          "npm:@nguyenquangthai/pi-omp-theme@1.0.12"
           "npm:@gotgenes/pi-permission-system@31.1.3"
-          "npm:@dietrichgebert/ponytail@4.9.0"
           "npm:donsetch@4.1.0"
           "npm:@juicesharp/rpiv-ask-user-question@2.10.1"
           "npm:@juicesharp/rpiv-todo@2.10.1"
           "npm:pi-scroll-speed@0.2.0"
-          # "npm:@juicesharp/rpiv-advisor@2.10.1"
-          # "npm:context-mode@1.0.169" # Useful but doesn't mesh well with the permission system
         ];
       in
       #bash

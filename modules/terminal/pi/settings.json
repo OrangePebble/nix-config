@@ -1,21 +1,16 @@
 {
   "packages": [
     "npm:@gotgenes/pi-permission-system@31.1.3",
-    "npm:@dietrichgebert/ponytail@4.9.0",
     "npm:donsetch@4.1.0",
     "npm:@juicesharp/rpiv-ask-user-question@2.10.1",
     "npm:@juicesharp/rpiv-todo@2.10.1",
-    "npm:@nguyenquangthai/pi-omp-theme@1.0.12",
     "npm:pi-scroll-speed@0.2.0"
   ],
   "defaultTools": [
     "read",
     "bash",
     "edit",
-    "write",
-    "grep",
-    "find",
-    "ls"
+    "write"
   ],
   "defaultProvider": "github-copilot",
   "defaultModel": "gpt-5.6-terra",
@@ -27,60 +22,7 @@
   "terminal": {
     "showTerminalProgress": true
   },
-  "theme": "titanium",
-  "piOmpTheme": {
-    "enabled": true,
-    "preset": "default",
-    "placement": "below",
-    "startup": {
-      "mode": "compact",
-      "showResources": false,
-      "alwaysExpanded": false
-    },
-    "statusLine": {
-      "enabled": true,
-      "separator": "|",
-      "layout": {
-        "left": [
-          "model_effort",
-          "path"
-        ],
-        "right": [
-          "claude_context",
-          "cost"
-        ],
-        "secondary": [
-          "extension_statuses"
-        ]
-      },
-      "disabledSegments": [],
-      "customItems": [],
-      "bottomMargin": 0,
-      "contextBarWidth": 10
-    },
-    "editor": {
-      "enabled": true,
-      "style": "dock",
-      "frame": "claude",
-      "showMetadata": false,
-      "hint": ""
-    },
-    "theme": {
-      "nerdFonts": "on",
-      "shimmer": "kitt",
-      "sessionAccent": true,
-      "terminalBackgroundSync": "auto",
-      "autoApply": "off",
-      "colors": {},
-      "glyphs": {}
-    },
-    "compatibility": {
-      "allowSafePatches": true,
-      "allowCorePatches": false,
-      "preferExistingEditor": true,
-      "preferExistingFooter": true
-    }
-  },
+  "theme": "dark",
   "enableInstallTelemetry": false,
   "lastChangelogVersion": "0.85.1"
 }

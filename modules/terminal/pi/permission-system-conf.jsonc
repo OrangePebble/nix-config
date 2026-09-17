@@ -1,0 +1,163 @@
+{
+  "permission": {
+    "*": "ask",
+    "read": "allow",
+    "write": {
+      "*": "ask",
+      "*.lock": "deny"
+    },
+    "edit": {
+      "*": "ask",
+      "*.lock": "deny"
+    },
+    "ask_user_question": "allow",
+    "todo": "allow",
+    "web_crawl": "allow",
+    "web_fetch": "allow",
+    "web_screenshot": "allow",
+    "web_search": "allow",
+    "skill": {
+      "*": "allow"
+    },
+    "path": {
+      "*.env": "deny",
+      "*.env.*": "deny",
+      "*.key": "deny",
+      "*.p12": "deny",
+      "*.pem": "deny",
+      "*.pfx": "deny",
+      ".bash_history": "deny",
+      ".envrc": "deny",
+      ".netrc": "deny",
+      ".zsh_history": "deny",
+      "_netrc": "deny",
+      "credentials": "deny",
+      "id_dsa": "deny",
+      "id_ecdsa": "deny",
+      "id_ed25519": "deny",
+      "id_rsa": "deny",
+      "identity": "deny",
+      "~/.gnupg": "deny",
+      "~/.gnupg/*": "deny",
+      "~/.ssh": "deny",
+      "~/.ssh/*": "deny"
+    },
+    "path_read": {
+      "*.env.example": "allow"
+    },
+    "bash": {
+      "*": "ask",
+
+      // File inspection
+      "basename *": "allow",
+      "cat *": "allow",
+      "cd *": "allow",
+      "dirname *": "allow",
+      "head *": "allow",
+      "less *": "allow",
+      "more *": "allow",
+      "realpath *": "allow",
+      "tail *": "allow",
+      "test *": "allow",
+      "tr *": "allow",
+
+      // Listing and metadata
+      "df *": "allow",
+      "du *": "allow",
+      "file *": "allow",
+      "ls *": "allow",
+      "stat *": "allow",
+      "tree *": "allow",
+      "wc *": "allow",
+
+      // Search
+      "egrep *": "allow",
+      "fd *": "allow",
+      "fgrep *": "allow",
+      "find *": "allow",
+      "grep *": "allow",
+      "rg *": "allow",
+
+      // Comparison and hashing
+      "cksum *": "allow",
+      "cmp *": "allow",
+      "comm *": "allow",
+      "diff *": "allow",
+      "md5sum *": "allow",
+      "sha1sum *": "allow",
+      "sha256sum *": "allow",
+      "sort *": "allow",
+
+      // System info
+      "date": "allow",
+      "hostname": "allow",
+      "id": "allow",
+      "printenv *": "allow",
+      "ps *": "allow",
+      "pwd": "allow",
+      "type *": "allow",
+      "uname *": "allow",
+      "uptime": "allow",
+      "which *": "allow",
+      "whoami": "allow",
+
+      // Git read-only subcommands
+      "git blame *": "allow",
+      "git branch": "allow",
+      "git diff *": "allow",
+      "git log *": "allow",
+      "git ls-files *": "allow",
+      "git remote -v": "allow",
+      "git rev-parse *": "allow",
+      "git show *": "allow",
+      "git status *": "allow",
+
+      // Miscellaneous
+      "bazel --version": "allow",
+      "bazel help *": "allow",
+      "bazel query *": "allow",
+      "bazel cquery *": "allow",
+      "bazel aquery *": "allow",
+      "echo *": "allow",
+      "nix --version": "allow",
+      "printf *": "allow",
+      "true": "allow",
+
+      // Commands that can execute or write
+      "fd*--exec*": "ask",
+      "fd*-X *": "ask",
+      "fd*-x *": "ask",
+      "find*-delete*": "ask",
+      "find*-exec*": "ask",
+      "find*-fls*": "ask",
+      "find*-fprint*": "ask",
+      "find*-ok*": "ask",
+      "rg*--pre *": "ask",
+      "rg*--pre=*": "ask",
+      "sort*-o*": "ask"
+    },
+    "external_directory": {
+      "*": "ask",
+      "/tmp/*": "allow",
+
+      // Work directories
+      // This isn't an actual directory but a bazel target that the extension thinks is a directory
+      "/tools/env_simulator/*": "allow"
+    },
+    "external_directory_read": {
+      "/etc/*": "allow",
+      "/nix/store/*": "allow",
+      "/usr/share/*": "allow",
+      "~/.cache/*": "allow",
+      "~/.config/nvim/*": "allow",
+      "~/.config/pi/*": "allow",
+      "~/.config/tmux/*": "allow",
+      "~/.local/share/*": "allow",
+      "~/home/nix-config/*": "allow",
+
+      // Work directories
+      "~/simulation_outputs/*": "allow",
+      "~/work-nix-config/*": "allow"
+    }
+  }
+}
