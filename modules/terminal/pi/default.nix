@@ -8,6 +8,10 @@
   ...
 }:
 {
+  systemd.tmpfiles.rules = [
+    "d /tmp/pi 0700 ${vars.username} users -"
+  ];
+
   hm = {
     imports = [
       inputs.pi.homeModules.default

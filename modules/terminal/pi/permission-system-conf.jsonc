@@ -4,10 +4,14 @@
     "read": "allow",
     "write": {
       "*": "ask",
+      "/tmp/pi": "allow",
+      "/tmp/pi/*": "allow",
       "*.lock": "deny"
     },
     "edit": {
       "*": "ask",
+      "/tmp/pi": "allow",
+      "/tmp/pi/*": "allow",
       "*.lock": "deny"
     },
     "ask_user_question": "allow",
@@ -44,10 +48,14 @@
       "~/.ssh/*": "deny"
     },
     "path_read": {
-      "*.env.example": "allow"
+      "*.env.example": "allow",
+      "/dev/null": "allow"
     },
     "path_write": {
-      "*": "ask"
+      "*": "ask",
+      "/dev/null": "allow",
+      "/tmp/pi": "allow",
+      "/tmp/pi/*": "allow"
     },
     "bash": {
       "*": "ask",
@@ -197,7 +205,10 @@
       "bazel cquery *": "allow",
       "bazel aquery *": "allow",
       "echo *": "allow",
+      "exit": "allow",
+      "exit *": "allow",
       "nix --version": "allow",
+      "nix-instantiate --parse *": "allow",
       "printf *": "allow",
       "shuf *": "allow",
       "true": "allow",
@@ -213,8 +224,8 @@
     },
     "external_directory": {
       "*": "ask",
-      "/tmp": "allow",
-      "/tmp/*": "allow",
+      "/tmp/pi": "allow",
+      "/tmp/pi/*": "allow",
 
       // Work directories
       // This isn't an actual directory but a bazel target that the extension thinks is a directory
@@ -227,16 +238,14 @@
       "/nix/store/*": "allow",
       "/usr/share": "allow",
       "/usr/share/*": "allow",
-      "~/.cache": "allow",
-      "~/.cache/*": "allow",
+      "~/.config/niri": "allow",
+      "~/.config/niri/*": "allow",
       "~/.config/nvim": "allow",
       "~/.config/nvim/*": "allow",
       "~/.config/pi": "allow",
       "~/.config/pi/*": "allow",
       "~/.config/tmux": "allow",
       "~/.config/tmux/*": "allow",
-      "~/.local/share": "allow",
-      "~/.local/share/*": "allow",
       "~/home/nix-config": "allow",
       "~/home/nix-config/*": "allow",
 
