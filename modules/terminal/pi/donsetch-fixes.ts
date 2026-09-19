@@ -65,47 +65,53 @@ async function restartPiDonsetchMcp(): Promise<void> {
  * reloading Pi or changing the installed DonSeTch package.
  */
 export default function (pi: ExtensionAPI) {
-  // DonSeTch supplies its own renderResult(), which only emits a compact
-  // summary and ignores Pi's `expanded` option. Pi does not expose another
-  // extension's tool definition for renderer replacement, so attach a
-  // transcript-only companion entry instead. It remains out of model context,
-  // displays the unshortened URL, and Ctrl+O expands it to the full Markdown.
-  pi.registerEntryRenderer("donsetch-full-fetch", (entry, { expanded }, theme) => {
-    const data = entry.data as { url: string; content: string };
-    const card = new Box(1, 1, (text) => theme.bg("toolSuccessBg", text));
-    const charCount = `${data.content.length.toLocaleString()} chars`;
-    let entryExpanded = expanded;
+  // DonSeTch supplies custom renderResult() functions that only emit compact
+  // summaries and ignore Pi's `expanded` option. Pi does not expose another
+  // extension's tool definition for renderer replacement, so attach
+  // transcript-only companion entries instead. They remain out of model
+  // context, show the full URL/query, and render their Markdown on demand.
+  const registerContentCard = (entryType: string, title: string) => {
+    pi.registerEntryRenderer(entryType, (entry, { expanded }, theme) => {
+      const data = entry.data as { subject: string; content: string };
+      const card = new Box(1, 1, (text) => theme.bg("toolSuccessBg", text));
+      const charCount = `${data.content.length.toLocaleString()} chars`;
+      let entryExpanded = expanded;
 
-    const rebuild = () => {
-      card.clear();
-      card.addChild(new Text(theme.fg("toolTitle", theme.bold("🌐 web_fetch content")), 0, 0));
-      card.addChild(new Text(theme.fg("mdLinkUrl", data.url), 0, 0));
-      card.addChild(
-        new Text(
-          theme.fg(
-            "muted",
-            entryExpanded
-              ? `${charCount} · click or Ctrl+O to collapse`
-              : `${charCount} · click or Ctrl+O to show content`,
+      const rebuild = () => {
+        card.clear();
+        card.addChild(new Text(theme.fg("toolTitle", theme.bold(title)), 0, 0));
+        card.addChild(new Text(theme.fg("mdLinkUrl", data.subject), 0, 0));
+        card.addChild(
+          new Text(
+            theme.fg(
+              "muted",
+              entryExpanded
+                ? `${charCount} · click or Ctrl+O to collapse`
+                : `${charCount} · click or Ctrl+O to show content`,
+            ),
+            0,
+            0,
           ),
-          0,
-          0,
-        ),
-      );
+        );
 
-      if (entryExpanded) {
-        card.addChild(new Markdown(data.content, 0, 1, getMarkdownTheme()));
-      }
-    };
+        if (entryExpanded) {
+          card.addChild(new Markdown(data.content, 0, 1, getMarkdownTheme()));
+        }
+      };
 
-    rebuild();
-    return new MouseRegion(card, (event) => {
-      if (event.type !== "click" || event.button !== "left") return undefined;
-      entryExpanded = !entryExpanded;
       rebuild();
-      return { handled: true, render: true };
+      return new MouseRegion(card, (event) => {
+        if (event.type !== "click" || event.button !== "left") return undefined;
+        entryExpanded = !entryExpanded;
+        rebuild();
+        return { handled: true, render: true };
+      });
     });
-  });
+  };
+
+  registerContentCard("donsetch-full-fetch", "🌐 web_fetch content");
+  registerContentCard("donsetch-full-search", "🔎 web_search content");
+  registerContentCard("donsetch-full-crawl", "🕷️ web_crawl content");
 
   pi.on("tool_call", async (event) => {
     const input = event.input as Record<string, unknown>;
@@ -141,17 +147,32 @@ export default function (pi: ExtensionAPI) {
   // A normal fetch may still escalate to Ghost and time out. Reset immediately
   // after that failure so the following request gets a clean daemon as well.
   pi.on("tool_result", async (event) => {
-    if (event.toolName !== "web_fetch") return;
+    const cards = {
+      web_fetch: {
+        entryType: "donsetch-full-fetch",
+        subject: typeof event.input.url === "string" ? event.input.url : "(unknown URL)",
+      },
+      web_search: {
+        entryType: "donsetch-full-search",
+        subject: typeof event.input.query === "string" ? `“${event.input.query}”` : "(unknown query)",
+      },
+      web_crawl: {
+        entryType: "donsetch-full-crawl",
+        subject: typeof event.input.url === "string" ? event.input.url : "(unknown URL)",
+      },
+    } as const;
+    const card = cards[event.toolName as keyof typeof cards];
+    if (!card) return;
+
     const text = event.content
       .map((block: any) => (block.type === "text" ? block.text : ""))
       .join("");
 
     if (!event.isError && text) {
-      const url = typeof event.input.url === "string" ? event.input.url : "(unknown URL)";
-      pi.appendEntry("donsetch-full-fetch", { url, content: text });
+      pi.appendEntry(card.entryType, { subject: card.subject, content: text });
     }
 
-    if (/ghost:\s*devtools ws timeout/i.test(text)) {
+    if (event.toolName === "web_fetch" && /ghost:\s*devtools ws timeout/i.test(text)) {
       await restartPiDonsetchMcp();
     }
   });
