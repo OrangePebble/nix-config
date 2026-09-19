@@ -61,6 +61,7 @@
       "*": "ask",
 
       // File inspection
+      "[ *": "allow",
       "basename *": "allow",
       "cat *": "allow",
       "cd *": "allow",
@@ -207,10 +208,19 @@
       "echo *": "allow",
       "exit": "allow",
       "exit *": "allow",
+      "luac -p *": "allow",
       "nix --version": "allow",
       "nix-instantiate --parse *": "allow",
       "printf *": "allow",
       "shuf *": "allow",
+      "set -e": "allow",
+      "set -u": "allow",
+      "set -eu": "allow",
+      "set -ue": "allow",
+      "set -o pipefail": "allow",
+      "set -eo pipefail": "allow",
+      "set -euo pipefail": "allow",
+      "set -Eeuo pipefail": "allow",
       "true": "allow",
       "xargs *": "allow",
 
