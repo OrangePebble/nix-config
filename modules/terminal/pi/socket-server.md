@@ -49,6 +49,20 @@ The connection remains open and receives events from the whole TUI session, whet
 {"type":"event","event":"agent_settled","data":{}}
 ```
 
+The `open_for_user` tool broadcasts a generic file-opening request when the user explicitly asks Pi to navigate to a file or source location:
+
+```json
+{
+  "type": "event",
+  "event": "open_file",
+  "data": {
+    "locations": [
+      {"path": "/absolute/path/to/file.lua", "line": 42, "column": 1}
+    ]
+  }
+}
+```
+
 Forwarded events are `agent_*`, `turn_*`, `message_*`, `tool_execution_*`, and `ui_prompt_start`, plus model/thinking changes and compaction results. When `@gotgenes/pi-permission-system` is installed, its documented `permissions:ui_prompt` event is forwarded immediately before its permission UI opens. On normal session shutdown the server sends one `session_shutdown` event and closes subscribers.
 
 ### Send a prompt
