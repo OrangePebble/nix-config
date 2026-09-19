@@ -1,0 +1,10 @@
+[general]
+# Enter copies the annotated capture to the clipboard and saves it to disk.
+early-exit = ["copy", "save"]
+fullscreen = true
+initial-tool = "crop"
+copy-command = "wl-copy"
+output-filename = "~/Pictures/screenshots/%Y-%m-%d_%H-%M-%S.png"
+save-after-copy = true
+actions-on-enter = ["save-to-clipboard", "save-to-file"]
+actions-on-escape = ["exit"]

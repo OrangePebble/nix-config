@@ -123,14 +123,13 @@ binds {
     Mod+Up hotkey-overlay-title="Focus window above" { focus-window-up; }
     Mod+WheelScrollLeft hotkey-overlay-title="Focus left column" { focus-column-left; }
     Mod+WheelScrollRight hotkey-overlay-title="Focus right column" { focus-column-right; }
-    Shift+Print hotkey-overlay-title="Screenshot (current window)" { screenshot-window; }
-    Alt+Print hotkey-overlay-title="Screenshot (all screens)" { spawn "flameshot" "full" "-p" "/home/pebble/Pictures/screenshots"; }
-    Ctrl+Print hotkey-overlay-title="Screenshot (current screen)" { screenshot-screen; }
+    Shift+Print hotkey-overlay-title="Screenshot (focused window)" { spawn-sh "dms screenshot window --stdout --no-file --no-clipboard | satty --filename -"; }
+    Ctrl+Print hotkey-overlay-title="Screenshot (all displays)" { spawn-sh "dms screenshot all --stdout --no-file --no-clipboard | satty --filename -"; }
     Mod+B hotkey-overlay-title="Open browser" { spawn "zen-beta"; }
     Mod+E hotkey-overlay-title="Open file explorer" { spawn "dolphin"; }
     Mod+Shift+T hotkey-overlay-title="Open terminal" { spawn "foot"; }
     Mod+T hotkey-overlay-title="Open terminal" { spawn "foot" "tmux" "new" "-A"; }
-    Print hotkey-overlay-title="Screenshot (selected area)" { spawn "flameshot" "gui"; }
+    Print hotkey-overlay-title="Screenshot (current screen)" { spawn-sh "dms screenshot full --stdout --no-file --no-clipboard | satty --filename -"; }
     Mod+Alt+K hotkey-overlay-title="Switch keyboard layout" { switch-layout "next"; }
     Mod+Escape allow-inhibiting=false hotkey-overlay-title="Toggle inhibit shortcuts" { toggle-keyboard-shortcuts-inhibit; }
     Mod+O repeat=false hotkey-overlay-title="Toggle overview" { toggle-overview; }

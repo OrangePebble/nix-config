@@ -23,8 +23,8 @@
       kdePackages.kde-cli-tools # Contains tool used by dolphin to edit default file apps
       kdePackages.ark
       nomacs # Image viewer
-      flameshot
-      grim # Dependency for Flameshot in wayland
+      satty
+      wl-clipboard
     ];
     programs = {
       niri = {
@@ -79,8 +79,8 @@
           source = funcs.mkMutableConfigSymlink ./dms-clipboard-settings.json;
           force = true;
         };
-        "flameshot/flameshot.ini" = {
-          source = funcs.mkMutableConfigSymlink ./flameshot.ini;
+        "satty/config.toml" = {
+          source = funcs.mkMutableConfigSymlink ./satty.toml;
           force = true;
         };
         "menus/applications.menu" = {

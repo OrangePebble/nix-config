@@ -541,14 +541,6 @@
     {
       "enabled": true,
       "field": "appName",
-      "pattern": "flameshot",
-      "matchType": "exact",
-      "action": "popup_only",
-      "urgency": "default"
-    },
-    {
-      "enabled": true,
-      "field": "appName",
       "pattern": "Terminal monitoring",
       "matchType": "exact",
       "action": "no_history",
