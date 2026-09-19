@@ -9,7 +9,7 @@
     services = {
       displayManager.dms-greeter = {
         enable = true;
-        configHome = vars.homeDirectory;
+        configHome = config.users.users.${vars.username}.home;
         compositor = {
           name = "niri";
           customConfig = ''

@@ -35,6 +35,7 @@
 # To update an encrypted file with new keys run:
 #  'sops updatekeys <file>'
 {
+  config,
   inputs,
   pkgs,
   lib,
@@ -58,7 +59,7 @@
   # To decrypt a file run: `sops decrypt -i <file>`.
   # The default key sops tries to get is the file name.
   sops = {
-    age.keyFile = "${vars.homeDirectory}/.config/sops/age/keys.txt";
+    age.keyFile = "${config.users.users.${vars.username}.home}/.config/sops/age/keys.txt";
 
     # Not automatically adding secrets because I don't see the point yet, but
     #  leaving this here.

@@ -17,7 +17,7 @@
 
   config = lib.mkIf config.opts.niri {
     environment.systemPackages = with pkgs; [
-      inputs.dms.packages.${vars.hostPlatform}.default
+      inputs.dms.packages.${pkgs.stdenv.hostPlatform.system}.default
       xwayland-satellite
       kdePackages.dolphin
       kdePackages.kde-cli-tools # Contains tool used by dolphin to edit default file apps
@@ -34,8 +34,8 @@
       dms-shell = {
         enable = true;
         # Use latest dms and quickshell.
-        package = inputs.dms.packages.${vars.hostPlatform}.default;
-        quickshell.package = inputs.quickshell.packages.${vars.hostPlatform}.quickshell;
+        package = inputs.dms.packages.${pkgs.stdenv.hostPlatform.system}.default;
+        quickshell.package = inputs.quickshell.packages.${pkgs.stdenv.hostPlatform.system}.quickshell;
       };
       dsearch.enable = true;
     };

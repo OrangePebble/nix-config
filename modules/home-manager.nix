@@ -1,10 +1,14 @@
 {
+  config,
   inputs,
   lib,
   funcs,
   vars,
   ...
 }:
+let
+  homeDirectory = config.users.users.${vars.username}.home;
+in
 {
   imports = [
     inputs.home-manager.nixosModules.default
@@ -25,8 +29,8 @@
   hm = {
     home = {
       username = vars.username;
-      homeDirectory = vars.homeDirectory;
-      stateVersion = vars.stateVersion;
+      inherit homeDirectory;
+      stateVersion = config.system.stateVersion;
     };
 
     # Nicely reload system units when changing configs.
@@ -57,9 +61,9 @@
       in
       builtins.listToAttrs (
         builtins.map (target: {
-          name = "${lib.removePrefix ((vars.homeDirectory) + "/") (vars.subHomeDirectory)}/${target}";
+          name = "${lib.removePrefix (homeDirectory + "/") "${homeDirectory}/home"}/${target}";
           value = {
-            source = funcs.mkOutOfStoreSymlink "${vars.homeDirectory}/${folders.${target}}";
+            source = funcs.mkOutOfStoreSymlink "${homeDirectory}/${folders.${target}}";
           };
         }) (builtins.attrNames folders)
       )

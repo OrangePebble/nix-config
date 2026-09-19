@@ -88,7 +88,11 @@
         #  makes panels overlap and look wrong) is fixed
         startup.desktopScript."panels".preCommands = lib.mkForce ''
           sleep 3
-          [ -f ${vars.homeDirectory}/.config/plasma-org.kde.plasma.desktop-appletsrc ] && rm ${vars.homeDirectory}/.config/plasma-org.kde.plasma.desktop-appletsrc
+          [ -f ${
+            config.users.users.${vars.username}.home
+          }/.config/plasma-org.kde.plasma.desktop-appletsrc ] && rm ${
+            config.users.users.${vars.username}.home
+          }/.config/plasma-org.kde.plasma.desktop-appletsrc
         '';
 
         # Enable and configure MouseTiler

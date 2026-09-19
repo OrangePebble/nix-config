@@ -8,7 +8,7 @@
   # Don't forget to set a password with `passwd`.
   users.users.${vars.username} = {
     isNormalUser = true;
-    description = vars.fullname;
+    description = "OrangePebble";
     extraGroups = [
       "networkmanager"
       "wheel"
@@ -58,22 +58,8 @@
   # Adds current flake to the registry so it can be accessed in things like the repl.
   nix.registry = {
     config.flake = inputs.self;
-    # config-git = {
-    #   exact = false;
-    #   to = {
-    #     type = "git";
-    #     url = "file:${vars.configDirectory}";
-    #   };
-    # };
-    # config-github = {
-    #   exact = false;
-    #   to = {
-    #     type = "github";
-    #     owner = "p-laranjinha";
-    #     repo = "nix-config";
-    #   };
-    # };
   };
 
-  system.stateVersion = vars.stateVersion;
+  # Research properly before changing this.
+  system.stateVersion = "24.05";
 }

@@ -1,10 +1,15 @@
 {
+  config,
   pkgs,
   funcs,
   vars,
   inputs,
   ...
 }:
+let
+  homeDirectory = config.users.users.${vars.username}.home;
+  configDirectory = "${homeDirectory}/home/nix-config";
+in
 {
   imports = [
     ./neovim
@@ -43,9 +48,9 @@
 
       # Runs a script that rebuild switches this config.
       nixs = toString (funcs.mkMutableConfigSymlink ./nixs.sh);
-      nixb = "sudo nixos-rebuild build --flake ${vars.configDirectory}";
+      nixb = "sudo nixos-rebuild build --flake ${configDirectory}";
       nixl = "nixos-rebuild list-generations";
-      nixu = "nix flake update --flake ${vars.configDirectory}";
+      nixu = "nix flake update --flake ${configDirectory}";
       nixd = "nix develop -c $SHELL";
       nixp = "nix-shell --run $SHELL -p";
 
@@ -56,10 +61,10 @@
         in rec {
           inherit self;
           inherit (self) inputs lib;
-          inherit (self.nixosConfigurations) ${vars.hostname};
-          inherit (self.nixosConfigurations.${vars.hostname}) pkgs;
-          inherit (self.nixosConfigurations.${vars.hostname}._module.specialArgs) vars;
-          inherit (self.nixosConfigurations.${vars.hostname}._module.args) funcs;
+          inherit (self.nixosConfigurations) ${config.networking.hostName};
+          inherit (self.nixosConfigurations.${config.networking.hostName}) pkgs;
+          inherit (self.nixosConfigurations.${config.networking.hostName}._module.specialArgs) vars;
+          inherit (self.nixosConfigurations.${config.networking.hostName}._module.args) funcs;
         }
       ''}";
     };
@@ -133,7 +138,7 @@
         # Required for zoxide to set the 'z' and 'zi' commands when set with home manager.
         enable = true;
         # Removes rebuild warning.
-        dotDir = "${vars.homeDirectory}/.config/zsh";
+        dotDir = "${homeDirectory}/.config/zsh";
       };
 
       # In home-manager so silent=true actually works.

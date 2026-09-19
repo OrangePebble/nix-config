@@ -10,10 +10,10 @@
   config = lib.mkIf config.opts.niri {
     systemd.tmpfiles.rules = [
       # Remove these backups that break things when I switch from plasma to niri.
-      "r ${vars.homeDirectory}/.config/gtk-3.0/settings.ini.backup - - - - -"
-      "r ${vars.homeDirectory}/.config/gtk-4.0/gtk.css.backup - - - - -"
-      "r ${vars.homeDirectory}/.config/gtk-4.0/settings.ini.backup - - - - -"
-      "r ${vars.homeDirectory}/.gtkrc-2.0.backup - - - - -"
+      "r ${config.users.users.${vars.username}.home}/.config/gtk-3.0/settings.ini.backup - - - - -"
+      "r ${config.users.users.${vars.username}.home}/.config/gtk-4.0/gtk.css.backup - - - - -"
+      "r ${config.users.users.${vars.username}.home}/.config/gtk-4.0/settings.ini.backup - - - - -"
+      "r ${config.users.users.${vars.username}.home}/.gtkrc-2.0.backup - - - - -"
     ];
     environment.sessionVariables = {
       QT_QPA_PLATFORM = "wayland";

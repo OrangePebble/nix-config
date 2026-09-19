@@ -81,10 +81,11 @@
       # Common information about the system that may be used in multiple locations.
       # Using camelCase because that is the standard for options. kebab-case is for packages and files.
       vars = import ./lib/vars inputs;
+      system = "x86_64-linux";
       lib = (nixpkgs.lib.extend (_: _: home-manager.lib)).extend (import ./lib/lib);
 
       pkgs-stable = import inputs.nixpkgs-stable {
-        system = vars.hostPlatform;
+        inherit system;
         config.allowUnfree = true;
         allowUnfreePredicate = _: true;
         overlays = [ (import ./overlays/beets.nix) ];
@@ -93,8 +94,7 @@
     {
       inherit lib;
       nixosConfigurations.${vars.hostname} = nixpkgs.lib.nixosSystem {
-        inherit lib;
-        system = vars.hostPlatform;
+        inherit lib system;
         modules = (lib.attrValues (lib.modulesIn ./modules)) ++ [
           ./lib/funcs
           ./lib/opts
