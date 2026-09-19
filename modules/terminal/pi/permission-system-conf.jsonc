@@ -46,6 +46,9 @@
     "path_read": {
       "*.env.example": "allow"
     },
+    "path_write": {
+      "*": "ask"
+    },
     "bash": {
       "*": "ask",
 
@@ -57,6 +60,7 @@
       "head *": "allow",
       "less *": "allow",
       "more *": "allow",
+      "nl *": "allow",
       "realpath *": "allow",
       "tail *": "allow",
       "test *": "allow",
@@ -66,18 +70,31 @@
       "df *": "allow",
       "du *": "allow",
       "file *": "allow",
+      "file *-C*": "ask",
+      "file *--compile*": "ask",
       "ls *": "allow",
       "stat *": "allow",
       "tree *": "allow",
+      "tree *-o*": "ask",
       "wc *": "allow",
 
       // Search
       "egrep *": "allow",
       "fd *": "allow",
+      "fd*--exec*": "ask",
+      "fd*-X *": "ask",
+      "fd*-x *": "ask",
       "fgrep *": "allow",
       "find *": "allow",
+      "find*-delete*": "ask",
+      "find*-exec*": "ask",
+      "find*-fls*": "ask",
+      "find*-fprint*": "ask",
+      "find*-ok*": "ask",
       "grep *": "allow",
       "rg *": "allow",
+      "rg*--pre *": "ask",
+      "rg*--pre=*": "ask",
 
       // Comparison and hashing
       "cksum *": "allow",
@@ -88,6 +105,7 @@
       "sha1sum *": "allow",
       "sha256sum *": "allow",
       "sort *": "allow",
+      "sort*-o*": "ask",
 
       // System info
       "date": "allow",
@@ -104,14 +122,73 @@
 
       // Git read-only subcommands
       "git blame *": "allow",
+      "git branch --list *": "allow",
+      "git branch --show-current": "allow",
       "git branch": "allow",
+      "git cat-file *": "allow",
+      "git cat-file *--filters*": "ask",
+      "git cat-file *--textconv*": "ask",
+      "git check-ignore *": "allow",
+      "git count-objects *": "allow",
+      "git describe *": "allow",
       "git diff *": "allow",
+      "git diff *--ext-diff*": "ask",
+      "git diff *--textconv*": "ask",
+      "git for-each-ref *": "allow",
+      "git grep *": "allow",
       "git log *": "allow",
       "git ls-files *": "allow",
+      "git ls-remote *": "allow",
+      "git ls-remote *-u*": "ask",
+      "git merge-base *": "allow",
+      "git name-rev *": "allow",
+      "git reflog show *": "allow",
       "git remote -v": "allow",
+      "git remote get-url *": "allow",
+      "git rev-list *": "allow",
       "git rev-parse *": "allow",
+      "git shortlog *": "allow",
       "git show *": "allow",
+      "git show *--textconv*": "ask",
+      "git show-ref *": "allow",
+      "git stash list *": "allow",
       "git status *": "allow",
+      "git tag --list *": "allow",
+
+      // Read-only commands in another Git working directory
+      "git -C * blame *": "allow",
+      "git -C * branch --list *": "allow",
+      "git -C * branch --show-current": "allow",
+      "git -C * branch": "allow",
+      "git -C * cat-file *": "allow",
+      "git -C * cat-file *--filters*": "ask",
+      "git -C * cat-file *--textconv*": "ask",
+      "git -C * check-ignore *": "allow",
+      "git -C * count-objects *": "allow",
+      "git -C * describe *": "allow",
+      "git -C * diff *": "allow",
+      "git -C * diff *--ext-diff*": "ask",
+      "git -C * diff *--textconv*": "ask",
+      "git -C * for-each-ref *": "allow",
+      "git -C * grep *": "allow",
+      "git -C * log *": "allow",
+      "git -C * ls-files *": "allow",
+      "git -C * ls-remote *": "allow",
+      "git -C * ls-remote *-u*": "ask",
+      "git -C * merge-base *": "allow",
+      "git -C * name-rev *": "allow",
+      "git -C * reflog show *": "allow",
+      "git -C * remote -v": "allow",
+      "git -C * remote get-url *": "allow",
+      "git -C * rev-list *": "allow",
+      "git -C * rev-parse *": "allow",
+      "git -C * shortlog *": "allow",
+      "git -C * show *": "allow",
+      "git -C * show *--textconv*": "ask",
+      "git -C * show-ref *": "allow",
+      "git -C * stash list *": "allow",
+      "git -C * status *": "allow",
+      "git -C * tag --list *": "allow",
 
       // Miscellaneous
       "bazel --version": "allow",
@@ -122,23 +199,21 @@
       "echo *": "allow",
       "nix --version": "allow",
       "printf *": "allow",
+      "shuf *": "allow",
       "true": "allow",
+      "xargs *": "allow",
 
-      // Commands that can execute or write
-      "fd*--exec*": "ask",
-      "fd*-X *": "ask",
-      "fd*-x *": "ask",
-      "find*-delete*": "ask",
-      "find*-exec*": "ask",
-      "find*-fls*": "ask",
-      "find*-fprint*": "ask",
-      "find*-ok*": "ask",
-      "rg*--pre *": "ask",
-      "rg*--pre=*": "ask",
-      "sort*-o*": "ask"
+      // Archive inspection
+      "tar -t*": "allow",
+      "tar --list*": "allow",
+      "tar *--to-command*": "ask",
+      "tar *--checkpoint-action*": "ask",
+      "tar *--use-compress-program*": "ask",
+      "tar *-I *": "ask"
     },
     "external_directory": {
       "*": "ask",
+      "/tmp": "allow",
       "/tmp/*": "allow",
 
       // Work directories
@@ -146,18 +221,29 @@
       "/tools/env_simulator/*": "allow"
     },
     "external_directory_read": {
+      "/etc": "allow",
       "/etc/*": "allow",
+      "/nix/store": "allow",
       "/nix/store/*": "allow",
+      "/usr/share": "allow",
       "/usr/share/*": "allow",
+      "~/.cache": "allow",
       "~/.cache/*": "allow",
+      "~/.config/nvim": "allow",
       "~/.config/nvim/*": "allow",
+      "~/.config/pi": "allow",
       "~/.config/pi/*": "allow",
+      "~/.config/tmux": "allow",
       "~/.config/tmux/*": "allow",
+      "~/.local/share": "allow",
       "~/.local/share/*": "allow",
+      "~/home/nix-config": "allow",
       "~/home/nix-config/*": "allow",
 
       // Work directories
+      "~/simulation_outputs": "allow",
       "~/simulation_outputs/*": "allow",
+      "~/work-nix-config": "allow",
       "~/work-nix-config/*": "allow"
     }
   }
