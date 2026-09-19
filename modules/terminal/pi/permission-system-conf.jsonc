@@ -120,6 +120,7 @@
       "cksum *": "allow",
       "cmp *": "allow",
       "comm *": "allow",
+      "command -v *": "allow",
       "diff *": "allow",
       "md5sum *": "allow",
       "sha1sum *": "allow",
