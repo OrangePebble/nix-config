@@ -161,7 +161,6 @@
       ".config/tmux/plugins/tmux-which-key/config.yaml".source =
         funcs.mkMutableConfigSymlink ./tmux/which-key.yaml;
       ".config/tmux/scripts".source = funcs.mkMutableConfigSymlink ./tmux/scripts;
-      ".config/opencode/opencode.jsonc".source = funcs.mkMutableConfigSymlink ./opencode.jsonc;
       ".config/bat/config".source = funcs.mkMutableConfigSymlink ./bat-config;
 
       # Taken from the "foot" desktop file.
@@ -230,9 +229,6 @@
 
     # Adds the `git credential-oauth` command to authenticate to Forejo (and others) using OAuth.
     git-credential-oauth
-
-    # AI coding agent with plugins for Neovim integration.
-    opencode
 
     # # You can also create simple shell scripts directly inside your
     # # configuration. For example, this adds a command 'my-hello' to your
