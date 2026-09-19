@@ -1,8 +1,27 @@
 import { getMarkdownTheme, type ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { Box, Markdown, MouseRegion, Text } from "@earendil-works/pi-tui";
-import { readFile, readdir } from "node:fs/promises";
+import { randomUUID } from "node:crypto";
+import { mkdir, readFile, readdir, writeFile } from "node:fs/promises";
+import { join } from "node:path";
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+const SCREENSHOT_DIR = "/tmp/pi/donsetch-screenshots";
+
+async function saveScreenshot(
+  content: readonly { type: string; data?: string; mimeType?: string }[],
+): Promise<{ path: string; bytes: number } | undefined> {
+  const image = content.find(
+    (block) => block.type === "image" && block.mimeType === "image/png" && typeof block.data === "string",
+  );
+  if (!image?.data) return undefined;
+
+  await mkdir(SCREENSHOT_DIR, { recursive: true, mode: 0o700 });
+  const filename = `${Date.now()}-${randomUUID()}.png`;
+  const path = join(SCREENSHOT_DIR, filename);
+  const png = Buffer.from(image.data, "base64");
+  await writeFile(path, png, { mode: 0o600 });
+  return { path, bytes: png.byteLength };
+}
 
 /** Stop only Pi's direct DonSeTch MCP supervisor child, never a standalone CLI.
  * The original DonSeTch extension notices the exit and starts a new MCP process
@@ -112,6 +131,23 @@ export default function (pi: ExtensionAPI) {
   registerContentCard("donsetch-full-fetch", "🌐 web_fetch content");
   registerContentCard("donsetch-full-search", "🔎 web_search content");
   registerContentCard("donsetch-full-crawl", "🕷️ web_crawl content");
+  pi.registerEntryRenderer("donsetch-saved-screenshot", (entry, _options, theme) => {
+    const data = entry.data as { url: string; path: string; bytes: number };
+    const card = new Box(1, 1, (text) => theme.bg("toolSuccessBg", text));
+    card.addChild(new Text(theme.fg("toolTitle", theme.bold("📸 web_screenshot saved")), 0, 0));
+    card.addChild(new Text(theme.fg("mdLinkUrl", data.url), 0, 0));
+    card.addChild(new Text(theme.fg("muted", `${data.bytes.toLocaleString()} bytes`), 0, 0));
+    card.addChild(new Text(theme.fg("toolOutput", data.path), 0, 0));
+    return card;
+  });
+  pi.registerEntryRenderer("donsetch-screenshot-save-error", (entry, _options, theme) => {
+    const data = entry.data as { url: string; error: string };
+    const card = new Box(1, 1, (text) => theme.bg("toolErrorBg", text));
+    card.addChild(new Text(theme.fg("toolTitle", theme.bold("📸 web_screenshot was not saved")), 0, 0));
+    card.addChild(new Text(theme.fg("mdLinkUrl", data.url), 0, 0));
+    card.addChild(new Text(theme.fg("error", data.error), 0, 0));
+    return card;
+  });
 
   pi.on("tool_call", async (event) => {
     const input = event.input as Record<string, unknown>;
@@ -147,6 +183,27 @@ export default function (pi: ExtensionAPI) {
   // A normal fetch may still escalate to Ghost and time out. Reset immediately
   // after that failure so the following request gets a clean daemon as well.
   pi.on("tool_result", async (event) => {
+    if (event.toolName === "web_screenshot" && !event.isError) {
+      try {
+        const screenshot = await saveScreenshot(event.content);
+        if (screenshot) {
+          pi.appendEntry("donsetch-saved-screenshot", {
+            url: typeof event.input.url === "string" ? event.input.url : "(unknown URL)",
+            ...screenshot,
+          });
+        }
+      } catch (error) {
+        // Screenshot persistence is an optional local convenience; never turn
+        // an otherwise successful DonSeTch result into an error, but expose
+        // the local failure instead of silently discarding its diagnosis.
+        pi.appendEntry("donsetch-screenshot-save-error", {
+          url: typeof event.input.url === "string" ? event.input.url : "(unknown URL)",
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
+      return;
+    }
+
     const cards = {
       web_fetch: {
         entryType: "donsetch-full-fetch",
