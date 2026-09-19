@@ -209,13 +209,23 @@ export default function (pi: ExtensionAPI) {
           return;
         }
 
+        // Preserve text the user already has in Pi's editor: socket-submitted
+        // input appends to it, submits the combined prompt, then clears the
+        // editor just as an interactive submit would.
+        const editorText = context?.ui.getEditorText() ?? "";
+        const message = `${editorText}${request.message}`;
+        if (editorText && context) {
+          context.ui.setEditorText("");
+          context.ui.setStatus("pi-socket-editor-refresh", undefined);
+        }
+
         // `steer` also starts a turn immediately when Pi is idle. It is the
         // closest supported equivalent to an RPC prompt while busy.
-        pi.sendUserMessage(request.message, {
+        pi.sendUserMessage(message, {
           deliverAs: delivery,
           expandPromptTemplates: true,
         });
-        respond(socket, id, { accepted: true, delivery });
+        respond(socket, id, { accepted: true, delivery, includedEditorText: editorText.length > 0 });
         return;
       }
 

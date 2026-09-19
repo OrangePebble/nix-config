@@ -269,6 +269,8 @@
       "~/.config/pi/*": "allow",
       "~/.config/tmux": "allow",
       "~/.config/tmux/*": "allow",
+      "~/.local/share/nvim/lazy": "allow",
+      "~/.local/share/nvim/lazy/*": "allow",
       "~/home/nix-config": "allow",
       "~/home/nix-config/*": "allow",
 
