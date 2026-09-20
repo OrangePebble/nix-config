@@ -303,8 +303,8 @@
       // Work directories
       "~/simulation_outputs": "allow",
       "~/simulation_outputs/*": "allow",
-      "~/work-nix-config": "allow",
-      "~/work-nix-config/*": "allow"
+      "~/nix-work-config": "allow",
+      "~/nix-work-config/*": "allow"
     }
   }
 }
