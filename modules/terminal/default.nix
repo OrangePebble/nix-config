@@ -90,16 +90,13 @@ in
     bash.enable = true;
     git = {
       enable = true;
+      package = pkgs.git.override { withLibsecret = true; };
       config = {
         init.defaultBranch = "main";
         user.name = "OrangePebble";
         user.email = "git@orangepebble.net";
-
         credential.helper = [
-          # Keep credentials for 1 month.
-          # I could use 'store' for permanent storage, this keeps credentials in clear text at
-          #  ~/.git-credentials
-          "cache --timeout 2629800"
+          "libsecret"
           "oauth"
         ];
         core.pager = "delta";
