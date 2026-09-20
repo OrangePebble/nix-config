@@ -1,7 +1,12 @@
 // Slop made by asking AI to copy pi-omp-theme and change it
 
 import { CustomEditor, type ExtensionAPI } from "@earendil-works/pi-coding-agent";
-import { truncateToWidth, visibleWidth } from "@earendil-works/pi-tui";
+import {
+  truncateToWidth,
+  type TuiMouseEvent,
+  type TuiMouseEventResult,
+  visibleWidth,
+} from "@earendil-works/pi-tui";
 
 function fitWidth(text: string, width: number): string {
   const truncated = truncateToWidth(text, width, "");
@@ -58,6 +63,7 @@ function stripLeadingVisibleChars(line: string, count: number): string {
 
 class OmpPromptEditor extends CustomEditor {
   accent = (text: string) => text;
+  private renderedInputLineCount = 0;
 
   override render(width: number): string[] {
     // This matches pi-omp-theme's `dock` + `claude` editor layout. Narrow
@@ -77,6 +83,7 @@ class OmpPromptEditor extends CustomEditor {
     const prefix = `${" ".repeat(padding)}${prompt} `;
     const continuation = " ".repeat(padding + promptWidth);
     const body = nativeLines.slice(1, bottomBorderIndex);
+    this.renderedInputLineCount = body.length;
     const dropdown = nativeLines.slice(bottomBorderIndex + 1);
     const inputLines = body.map((line, index) => {
       const text = index === 0 && bashHidden > 0 ? stripLeadingVisibleChars(line, bashHidden) : line;
@@ -90,6 +97,27 @@ class OmpPromptEditor extends CustomEditor {
       border("─".repeat(width)),
       ...dropdown.map((line) => fitWidth(line, width)),
     ];
+  }
+
+  override handleMouse(event: TuiMouseEvent): TuiMouseEventResult | undefined {
+    if (event.width < 20) return super.handleMouse(event);
+
+    // `super.render()` renders the editable text into `innerWidth`, but the
+    // custom layout prepends the prompt to each input row. Translate pointer
+    // coordinates back into the superclass' coordinate system before it maps
+    // them to a text column. Dropdown rows are not indented, so leave those
+    // coordinates unchanged.
+    const padding = event.width < 50 ? 0 : 1;
+    const promptWidth = visibleWidth(this.leadingBangCount() > 0 ? "\uf12a" : "❯") + 1;
+    const prefixWidth = padding + promptWidth;
+    const innerWidth = Math.max(1, event.width - promptWidth - padding * 2);
+    const isInputRow = event.y > 0 && event.y <= this.renderedInputLineCount;
+
+    return super.handleMouse(
+      isInputRow
+        ? { ...event, x: event.x - prefixWidth, width: innerWidth }
+        : event,
+    );
   }
 
   private leadingBangCount(): number {
