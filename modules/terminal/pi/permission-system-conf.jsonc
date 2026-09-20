@@ -71,6 +71,21 @@
     "bash": {
       "*": "ask",
 
+      // Shell compound statements; nested commands are checked separately.
+      "! *": "allow",
+      "(*": "allow",
+      "[[ *": "allow",
+      "case *": "allow",
+      "for *": "allow",
+      "if *": "allow",
+      "until *": "allow",
+      "while *": "allow",
+      "{ *": "allow",
+
+      // Indirection wrappers; only proven read-only targets proceed without asking.
+      "timeout *": "allow",
+      "xargs *": "allow",
+
       // File inspection
       "[ *": "allow",
       "basename *": "allow",
@@ -212,38 +227,44 @@
       "git -C * status *": "allow",
       "git -C * tag --list *": "allow",
 
-      // Miscellaneous
-      "bazel --version": "allow",
-      "bazel help *": "allow",
-      "bazel query *": "allow",
-      "bazel cquery *": "allow",
-      "bazel aquery *": "allow",
-      "echo *": "allow",
-      "exit": "allow",
-      "exit *": "allow",
-      "luac -p *": "allow",
-      "nix --version": "allow",
-      "nix-instantiate --parse *": "allow",
-      "printf *": "allow",
-      "shuf *": "allow",
-      "set -e": "allow",
-      "set -u": "allow",
-      "set -eu": "allow",
-      "set -ue": "allow",
-      "set -o pipefail": "allow",
-      "set -eo pipefail": "allow",
-      "set -euo pipefail": "allow",
-      "set -Eeuo pipefail": "allow",
-      "true": "allow",
-      "xargs *": "allow",
-
       // Archive inspection
       "tar -t*": "allow",
       "tar --list*": "allow",
       "tar *--to-command*": "ask",
       "tar *--checkpoint-action*": "ask",
       "tar *--use-compress-program*": "ask",
-      "tar *-I *": "ask"
+      "tar *-I *": "ask",
+
+      // Miscellaneous
+      ":": "allow",
+      "bazel --version": "allow",
+      "bazel aquery *": "allow",
+      "bazel cquery *": "allow",
+      "bazel help *": "allow",
+      "bazel query *": "allow",
+      "echo *": "allow",
+      "exit *": "allow",
+      "false": "allow",
+      "luac -p *": "allow",
+      "nix --version": "allow",
+      "nix-instantiate --parse *": "allow",
+      "printf *": "allow",
+      "set -Eeuo pipefail": "allow",
+      "set -e": "allow",
+      "set -eo pipefail": "allow",
+      "set -eu": "allow",
+      "set -euo pipefail": "allow",
+      "set -o pipefail": "allow",
+      "set -u": "allow",
+      "set -ue": "allow",
+      "shuf *": "allow",
+      "sleep *": "allow",
+      "tmp_*=*": "allow",
+      "true": "allow",
+
+      // Disposable playground
+      "find /tmp/pi -mindepth 1 -delete": "allow",
+      "git clone https://* /tmp/pi/*": "allow"
     },
     "external_directory": {
       "*": "ask",

@@ -1,6 +1,8 @@
 If a shell command is unavailable, run it with Nix comma (`, <command>`); do not install it.
 
-Use `/tmp/pi` as the dedicated disposable workspace for temporary artifacts, experiments, generated files, and test fixtures.
+Use `/tmp/pi` as the dedicated disposable workspace for temporary artifacts, experiments, generated files, and test fixtures. To clear it, use `find /tmp/pi -mindepth 1 -delete`.
+
+For temporary variables in Bash commands, use the `tmp_*` prefix.
 
 Prefer the `read` tool with its line offset and limit for reading file ranges. Do not use `sed`, `awk`, Perl, or other interpreters solely to print lines. If Bash is necessary, use `head -n END -- FILE` for lines 1 through END, or `tail -n +START -- FILE | head -n COUNT` for an inclusive line range.
 
