@@ -20,7 +20,6 @@
     cargo # Used to install the nil Nix LSP.
     nodejs # For the bash LSP.
     python315 # For the python linter and formatter.
-    lsof # For the opencode plugin
 
     # LSPs, DAPs, Linters and Formatters not installed with Mason.
     statix
@@ -37,7 +36,7 @@
     defaultEditor = true;
   };
   hm = {
-    home.file.".config/nvim".source = funcs.mkMutableConfigSymlink ./config;
+    home.file.".config/nvim".source = funcs.mkMutableConfigSymlink ./neovim-config;
   };
   environment.shellAliases = {
     vi = "nvim";

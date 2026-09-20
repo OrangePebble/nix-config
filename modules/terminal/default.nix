@@ -12,9 +12,6 @@ let
 in
 {
   imports = [
-    ./neovim
-    ./pi
-
     # Tool to locate the nixpkgs package providing a certain file. Used by comma.
     # Unlike regular nix-index, this one includes an automatically updated database, and so I don't
     #  need to manually update it every once in a while.
@@ -113,8 +110,6 @@ in
       lfs.enable = true;
     };
 
-    tmux.enable = true;
-
     # CLI tool to run programs without installing them on Nix. Functionally an easier to use nix-shell. Requires nix-index.
     nix-index-database.comma.enable = true;
     nix-index.enable = true;
@@ -151,36 +146,8 @@ in
     home.file = {
       ".config/ghostty/config".source = funcs.mkMutableConfigSymlink ./ghostty.config;
       ".config/foot/foot.ini".source = funcs.mkMutableConfigSymlink ./foot.ini;
-      ".config/tmux/tmux.conf".source = funcs.mkMutableConfigSymlink ./tmux/tmux.conf;
-      ".config/tmux/plugins/tpm".source = funcs.mkOutOfStoreSymlink (
-        pkgs.fetchFromGitHub {
-          owner = "tmux-plugins";
-          repo = "tpm";
-          rev = "master";
-          hash = "sha256-hW8mfwB8F9ZkTQ72WQp/1fy8KL1IIYMZBtZYIwZdMQc=";
-        }
-      );
-      ".config/tmux/plugins/tmux-which-key/config.yaml".source =
-        funcs.mkMutableConfigSymlink ./tmux/which-key.yaml;
-      ".config/tmux/scripts".source = funcs.mkMutableConfigSymlink ./tmux/scripts;
       ".config/bat/config".source = funcs.mkMutableConfigSymlink ./bat-config;
-
-      # Taken from the "foot" desktop file.
-      # Maybe use pkgs.makeDesktopItem next time.
-      ".local/share/applications/tmux.desktop".text = ''
-        [Desktop Entry]
-        Type=Application
-        Exec=foot tmux new -A
-        Icon=foot
-        Terminal=false
-        Categories=System;TerminalEmulator;
-        Keywords=shell;prompt;command;commandline;
-
-        Name=tmux
-        Comment=A terminal multiplexer (launched with foot)
-      '';
     };
-
   };
 
   environment.systemPackages = with pkgs; [
@@ -204,9 +171,6 @@ in
     treefmt
     # Nix package version diff tool.
     nvd
-
-    # Library for notifications.
-    libnotify
 
     # find replacement, used to update fetchgit references together with update-nix-fetchgit in nixr.
     fd
