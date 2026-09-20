@@ -89,6 +89,7 @@
       // File inspection
       "[ *": "allow",
       "basename *": "allow",
+      "bash -n *": "allow",
       "cat *": "allow",
       "cd *": "allow",
       "dirname *": "allow",
@@ -122,8 +123,10 @@
       "fgrep *": "allow",
       "find *": "allow",
       "find*-delete*": "ask",
+      "find /tmp/pi -mindepth 1 -name * -delete": "allow", // Selectively delete disposable playground artifacts
       "find*-exec*": "ask",
       "find*-fls*": "ask",
+      "find*-follow*": "ask",
       "find*-fprint*": "ask",
       "find*-ok*": "ask",
       "grep *": "allow",
@@ -146,7 +149,7 @@
       // System info
       "date": "allow",
       "hostname": "allow",
-      "id": "allow",
+      "id *": "allow",
       "printenv *": "allow",
       "printenv": "deny",
       "ps *": "allow",
@@ -263,8 +266,10 @@
       "true": "allow",
 
       // Disposable playground
-      "find /tmp/pi -mindepth 1 -delete": "allow",
-      "git clone https://* /tmp/pi/*": "allow"
+      // A playground "find" rule is above so dangerous flags get filtered out.
+      "git clone https://* /tmp/pi/*": "allow",
+      "mktemp -p /tmp/pi": "allow",
+      "mktemp -d -p /tmp/pi": "allow"
     },
     "external_directory": {
       "*": "ask",
