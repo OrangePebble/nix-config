@@ -4,3 +4,6 @@
 [submodule "essentia"]
 	path = modules/music/essentia
 	url = https://git.orangepebble.net/OrangePebble/essentia-nix
+[submodule "pi-config"]
+	path = modules/pi/pi-config
+	url = https://git.orangepebble.net/OrangePebble/pi-config
