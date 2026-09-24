@@ -105,6 +105,7 @@ in
           hyperlinks = "true";
         };
         merge.conflictStyle = "zdiff3";
+        pull.ff = "only";
       };
       # Git extension for versioning large files (Git Large File Storage).
       lfs.enable = true;
