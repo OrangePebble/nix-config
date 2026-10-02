@@ -37,3 +37,9 @@ window-rule {
     match app-id="^com.danklinux.dms$"
     open-floating true
 }
+
+// @id=wr_1790430071265219339 @name=thunderbird
+window-rule {
+    match app-id="^thunderbird$" title="^.* Reminder$"
+    open-floating true
+}

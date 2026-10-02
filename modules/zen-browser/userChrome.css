@@ -4,6 +4,24 @@
 */
 
 /*
+* Show the folder names in a bookmark folder popup.
+* For some reason, the label that shows the name in regular bookmarks is empty,
+*  but a sibling label does have the contents, so we show that one instead.
+*/
+#PlacesToolbar
+  menupopup[placespopup]
+  menu.bookmark-item
+  > label.menu-accel:empty {
+  width: 0 !important;
+}
+#PlacesToolbar
+  menupopup[placespopup]
+  menu.bookmark-item
+  > label.menu-text:has(~ label.menu-accel:empty) {
+  margin-inline-start: var(--space-xsmall) !important;
+}
+
+/*
 * Changes the bookmarks to look like Essentials
 * From https://github.com/CMD-Golem/Zen-Browser-Mods
 */

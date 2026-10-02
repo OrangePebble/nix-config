@@ -121,6 +121,8 @@
           "zen.urlbar.single-toolbar-show-copy-url" = false;
           # Bring back the Firefox extensions button.
           "zen.theme.hide-unified-extensions-button" = false;
+          # If a workspace has a default profile, make tabs that have that profile open in that workspace.
+          "zen.workspaces.force-container-workspace" = true;
 
           "browser.uiCustomization.state" = builtins.toJSON {
             placements = {
@@ -148,7 +150,7 @@
                 "keepassxc-browser_keepassxc_org-browser-action" # KeePassXC-Browser
               ];
               zen-sidebar-foot-buttons = [
-                "zen-toggle-compact-mode"
+                # "zen-toggle-compact-mode"
                 # "preferences-button"
                 "zen-workspaces-button"
                 "downloads-button"
