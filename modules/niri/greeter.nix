@@ -14,14 +14,14 @@
           name = "niri";
           customConfig = ''
             // Taken from ./config/dms/outputs.kdl
-            output "DP-2" {
+            output "DP-1" {
                 mode "2560x1440@165.002"
                 scale 1
                 position x=0 y=0
                 variable-refresh-rate on-demand=true
                 focus-at-startup
             }
-            output "HDMI-A-1" {
+            output "DP-2" {
                 off
                 mode "1920x1080@144.001"
                 scale 1

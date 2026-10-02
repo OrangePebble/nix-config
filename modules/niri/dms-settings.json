@@ -2,7 +2,7 @@
   "currentThemeName": "custom",
   "currentThemeCategory": "custom",
   "customThemeFile": "/home/pebble/home/nix-config/modules/niri/theme.json",
-  "matugenTargetMonitor": "DP-2",
+  "matugenTargetMonitor": "DP-1",
   "widgetBackgroundColor": "s",
   "controlCenterTileColorMode": "primaryContainer",
   "cornerRadius": 12,
@@ -148,12 +148,12 @@
     ],
     "notepad": [
       {
-        "name": "DP-2",
+        "name": "DP-1",
         "model": "BenQ EX2710Q"
       }
     ],
     "lockScreen": [
-      "DP-2"
+      "DP-1"
     ]
   },
   "showOnLastDisplay": {
@@ -168,7 +168,7 @@
       "position": 1,
       "screenPreferences": [
         {
-          "name": "DP-2",
+          "name": "DP-1",
           "model": "BenQ EX2710Q"
         }
       ],

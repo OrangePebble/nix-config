@@ -71,12 +71,6 @@
         libraries = additional_libraries;
       };
 
-      steam = {
-        enable = true;
-        remotePlay.openFirewall = true;
-        localNetworkGameTransfers.openFirewall = true;
-      };
-
       solaar.enable = true;
     };
   hardware.logitech.wireless.enable = true;
@@ -185,6 +179,13 @@
     # This will update flatpaks on rebuild, which will make rebuild not
     #  idempotent, oh well.
     services.flatpak.update.onActivation = true;
+
+    # `~/home/downloads` is an out-of-store symlink into /nix/store and OrcaSlicer can't access the symlink target.
+    # When reading an .stl file, it reports this as a model with no geometry instead of a permissions error.
+    services.flatpak.overrides.settings."com.orcaslicer.OrcaSlicer".Context.filesystems = [
+      "/nix/store:ro"
+    ];
+
     services.flatpak.packages = [
       # App to make SVGs smaller.
       "re.sonny.OhMySVG"
@@ -204,9 +205,9 @@
       "com.orcaslicer.OrcaSlicer"
       # rec {
       #   appId = "com.orcaslicer.OrcaSlicer";
-      #   sha256 = "sha256-IfYEKWizi9GTqVo9P40h1IxNWSmU0pn7EN2qQrg7EKk=";
+      #   sha256 = "sha256-Q9N16m7ANyaJExDxQB2vcdy/nzfHQETugsxiBVeGYkc=";
       #   bundle = "${pkgs.fetchurl {
-      #     url = "https://github.com/OrcaSlicer/OrcaSlicer/releases/download/v2.4.2/OrcaSlicer-Linux-flatpak_V2.4.2_x86_64.flatpak";
+      #     url = "https://github.com/OrcaSlicer/OrcaSlicer/releases/download/nightly-builds/OrcaSlicer-Linux-flatpak_nightly_x86_64.flatpak";
       #     inherit sha256;
       #   }}";
       # }

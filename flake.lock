@@ -267,6 +267,46 @@
         "type": "sourcehut"
       }
     },
+    "monado-rift-wayland": {
+      "inputs": {
+        "monado-src": "monado-src",
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1783733503,
+        "narHash": "sha256-UnbbH5/Cs665pmkJp48OW2+SIvXn/HGnNSc7E7dwO68=",
+        "owner": "MaySeikatsu",
+        "repo": "monado-rift-wayland",
+        "rev": "6e605cd921fdff3817f75ca6bdb0319b67645402",
+        "type": "github"
+      },
+      "original": {
+        "owner": "MaySeikatsu",
+        "repo": "monado-rift-wayland",
+        "type": "github"
+      }
+    },
+    "monado-src": {
+      "flake": false,
+      "locked": {
+        "host": "gitlab.freedesktop.org",
+        "lastModified": 1704550069,
+        "narHash": "sha256-qp1EhOY340ckGjG88vhBlLkFDVI+YXcrR3kLjr4rSEE=",
+        "owner": "monado",
+        "repo": "monado",
+        "rev": "0d662607e43aa3f4207fef2833badffcd0e6eae4",
+        "type": "gitlab"
+      },
+      "original": {
+        "host": "gitlab.freedesktop.org",
+        "owner": "monado",
+        "repo": "monado",
+        "rev": "0d662607e43aa3f4207fef2833badffcd0e6eae4",
+        "type": "gitlab"
+      }
+    },
     "nix-alien": {
       "inputs": {
         "flake-compat": "flake-compat_2",
@@ -503,6 +543,7 @@
         "dms": "dms",
         "dms-plugin-registry": "dms-plugin-registry",
         "home-manager": "home-manager",
+        "monado-rift-wayland": "monado-rift-wayland",
         "nix-alien": "nix-alien",
         "nix-flatpak": "nix-flatpak",
         "nix-index-database": "nix-index-database_2",

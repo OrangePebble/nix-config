@@ -10,8 +10,8 @@ binds {
     Mod+W hotkey-overlay-title="Create window rule" { spawn "dms" "ipc" "call" "window-rules" "toggle"; }
     Mod+X hotkey-overlay-title="Power menu" { spawn "dms" "ipc" "call" "powermenu" "toggle"; }
     Shift+XF86AudioMute allow-when-locked=true hotkey-overlay-title="Microphone mute toggle" { spawn "dms" "ipc" "call" "audio" "micmute"; }
-    Shift+XF86MonBrightnessDown cooldown-ms=1000 hotkey-overlay-title="Turn off side monitor" { spawn "sh" "-c" "dms ipc toast info 'Turning off monitor.' && niri msg output HDMI-A-1 off"; }
-    Shift+XF86MonBrightnessUp hotkey-overlay-title="Turn on side monitor" { spawn "sh" "-c" "dms ipc toast info 'Turning on monitor.' && niri msg output HDMI-A-1 on"; }
+    Shift+XF86MonBrightnessDown cooldown-ms=1000 hotkey-overlay-title="Turn off side monitor" { spawn "sh" "-c" "dms ipc toast info 'Turning off monitor.' && niri msg output DP-2 off"; }
+    Shift+XF86MonBrightnessUp hotkey-overlay-title="Turn on side monitor" { spawn "sh" "-c" "dms ipc toast info 'Turning on monitor.' && niri msg output DP-2 on"; }
     Super+N hotkey-overlay-title="Notepad" { spawn "dms" "ipc" "call" "notepad" "toggle"; }
     Super+Shift+N hotkey-overlay-title="Notification center" { spawn "dms" "ipc" "call" "notifications" "toggle"; }
     XF86AudioLowerVolume allow-when-locked=true hotkey-overlay-title="Decrease volume" { spawn "dms" "ipc" "call" "audio" "decrement" "2"; }

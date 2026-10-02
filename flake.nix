@@ -69,6 +69,11 @@
       url = "github:lukasl-dev/pi.nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    monado-rift-wayland = {
+      url = "github:MaySeikatsu/monado-rift-wayland";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
