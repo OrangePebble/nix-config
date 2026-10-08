@@ -129,7 +129,6 @@
     inkscape-with-extensions
     # graphite # inkscape alternative, slows by rebuild too much
     gimp-with-plugins
-    freecad
     blender
 
     # Downloading apps.
@@ -176,42 +175,54 @@
       inputs.nix-flatpak.homeManagerModules.nix-flatpak
     ];
 
-    # This will update flatpaks on rebuild, which will make rebuild not
-    #  idempotent, oh well.
-    services.flatpak.update.onActivation = true;
+    services.flatpak = {
+      # This will update flatpaks on rebuild, which will make rebuild not
+      #  idempotent, oh well.
+      update.onActivation = true;
 
-    # `~/home/downloads` is an out-of-store symlink into /nix/store and OrcaSlicer can't access the symlink target.
-    # When reading an .stl file, it reports this as a model with no geometry instead of a permissions error.
-    services.flatpak.overrides.settings."com.orcaslicer.OrcaSlicer".Context.filesystems = [
-      "/nix/store:ro"
-    ];
+      remotes = [
+        {
+          name = "flathub";
+          location = "https://flathub.org/repo/flathub.flatpakrepo";
+        }
+        {
+          name = "flathub-beta";
+          location = "https://flathub.org/beta-repo/flathub-beta.flatpakrepo";
+        }
+      ];
 
-    services.flatpak.packages = [
-      # App to make SVGs smaller.
-      "re.sonny.OhMySVG"
+      # `~/home/downloads` is an out-of-store symlink into /nix/store and OrcaSlicer can't access the symlink target.
+      # When reading an .stl file, it reports this as a model with no geometry instead of a permissions error.
+      overrides.settings."com.orcaslicer.OrcaSlicer".Context.filesystems = [
+        "/nix/store:ro"
+      ];
 
-      # App to read files and add highlight lines based on tags.
-      "io.github.phastmike.tags"
+      packages = [
+        # App to make SVGs smaller.
+        "re.sonny.OhMySVG"
 
-      # App with lots of utilities for developers, like a chmod calculator, diff, QR code generator, and regex tester.
-      "me.iepure.devtoolbox"
+        # App to read files and add highlight lines based on tags.
+        "io.github.phastmike.tags"
 
-      # VSCode without the telemetry.
-      # Installing this as a flatpak so I can just use it casually without going through Nix.
-      # To go through Nix see: https://wiki.nixos.org/wiki/Visual_Studio_Code
-      "com.vscodium.codium"
+        # App with lots of utilities for developers, like a chmod calculator, diff, QR code generator, and regex tester.
+        "me.iepure.devtoolbox"
 
-      # Slicer for 3D printing.
-      "com.orcaslicer.OrcaSlicer"
-      # rec {
-      #   appId = "com.orcaslicer.OrcaSlicer";
-      #   sha256 = "sha256-Q9N16m7ANyaJExDxQB2vcdy/nzfHQETugsxiBVeGYkc=";
-      #   bundle = "${pkgs.fetchurl {
-      #     url = "https://github.com/OrcaSlicer/OrcaSlicer/releases/download/nightly-builds/OrcaSlicer-Linux-flatpak_nightly_x86_64.flatpak";
-      #     inherit sha256;
-      #   }}";
-      # }
-    ];
+        # VSCode without the telemetry.
+        # Installing this as a flatpak so I can just use it casually without going through Nix.
+        # To go through Nix see: https://wiki.nixos.org/wiki/Visual_Studio_Code
+        "com.vscodium.codium"
+
+        "com.orcaslicer.OrcaSlicer"
+        # rec {
+        #   appId = "com.orcaslicer.OrcaSlicer";
+        #   sha256 = "sha256-Q9N16m7ANyaJExDxQB2vcdy/nzfHQETugsxiBVeGYkc=";
+        #   bundle = "${pkgs.fetchurl {
+        #     url = "https://github.com/OrcaSlicer/OrcaSlicer/releases/download/nightly-builds/OrcaSlicer-Linux-flatpak_nightly_x86_64.flatpak";
+        #     inherit sha256;
+        #   }}";
+        # }
+      ];
+    };
   };
 
   opts.autostartScripts = {

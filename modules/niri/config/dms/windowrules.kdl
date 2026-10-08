@@ -43,3 +43,9 @@ window-rule {
     match app-id="^thunderbird$" title="^.* Reminder$"
     open-floating true
 }
+
+// @id=wr_1791478391017524901 @name=org.freecad.FreeCAD
+window-rule {
+    match app-id="^org.freecad.FreeCAD$" title="^Addon Manager"
+    open-floating true
+}
