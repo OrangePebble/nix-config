@@ -9,7 +9,7 @@
         <FCParamGroup Name="General">
           <FCText Name="FileOpenSavePath">/app/share/examples</FCText>
           <FCParamGroup Name="HiddenPreferencePacks"/>
-          <FCText Name="AutoloadModule">PartWorkbench</FCText>
+          <FCText Name="AutoloadModule">PartDesignWorkbench</FCText>
           <FCBool Name="SubstituteDecimalSeparator" Value="0"/>
           <FCInt Name="UseLocaleFormatting" Value="0"/>
           <FCBool Name="EnableCursorBlinking" Value="1"/>
@@ -18,7 +18,7 @@
           <FCBool Name="ComboBoxWheelEventFilter" Value="1"/>
           <FCInt Name="ToolbarIconSize" Value="24"/>
           <FCBool Name="ShowTaskWatcher" Value="1"/>
-          <FCText Name="BackgroundAutoloadModules">PartWorkbench,PartDesignWorkbench,SketcherWorkbench</FCText>
+          <FCText Name="BackgroundAutoloadModules">PartDesignWorkbench,SketcherWorkbench,PartWorkbench</FCText>
           <FCText Name="LastModule">PartWorkbench</FCText>
           <FCBool Name="LockToolBars" Value="1"/>
         </FCParamGroup>
@@ -50,9 +50,9 @@
           </FCParamGroup>
           <FCParamGroup Name="OpenSCAD"/>
           <FCParamGroup Name="Help">
-            <FCText Name="Suffix"/>
-            <FCText Name="Location"/>
-            <FCText Name="StyleSheet"/>
+            <FCText Name="Suffix"></FCText>
+            <FCText Name="Location"></FCText>
+            <FCText Name="StyleSheet"></FCText>
             <FCBool Name="optionGithub" Value="0"/>
             <FCBool Name="optionCustom" Value="0"/>
             <FCBool Name="optionWiki" Value="1"/>
@@ -68,15 +68,15 @@
             <FCParamGroup Name="STEP">
               <FCInt Name="Unit" Value="0"/>
               <FCText Name="Scheme">AP214IS</FCText>
-              <FCText Name="Company"/>
-              <FCText Name="Author"/>
+              <FCText Name="Company"></FCText>
+              <FCText Name="Author"></FCText>
             </FCParamGroup>
             <FCParamGroup Name="IGES">
               <FCInt Name="Unit" Value="0"/>
               <FCBool Name="BrepMode" Value="0"/>
               <FCBool Name="SkipBlankEntities" Value="1"/>
-              <FCText Name="Company"/>
-              <FCText Name="Author"/>
+              <FCText Name="Company"></FCText>
+              <FCText Name="Author"></FCText>
             </FCParamGroup>
             <FCParamGroup Name="Boolean">
               <FCBool Name="CheckModel" Value="1"/>
@@ -92,9 +92,9 @@
           </FCParamGroup>
           <FCParamGroup Name="Start">
             <FCBool Name="ShowOnStartup" Value="1"/>
-            <FCBool Name="ShowExamples" Value="1"/>
+            <FCBool Name="ShowExamples" Value="0"/>
             <FCBool Name="CloseStart" Value="0"/>
-            <FCText Name="CustomFolder"/>
+            <FCText Name="CustomFolder"></FCText>
             <FCBool Name="Migration2024Complete" Value="1"/>
             <FCBool Name="FirstStart2024" Value="0"/>
             <FCBool Name="closeStart" Value="0"/>
@@ -138,6 +138,7 @@
               <FCBool Name="SectionView" Value="1"/>
               <FCInt Name="AxisTransparency" Value="30"/>
               <FCInt Name="OccludedAxisTransparency" Value="90"/>
+              <FCBool Name="ElementFilterEnabled" Value="1"/>
             </FCParamGroup>
             <FCParamGroup Name="Constraints">
               <FCBool Name="UnifiedCoincident" Value="1"/>
@@ -187,6 +188,12 @@
             <FCBool Name="UseSystemDecimals" Value="0"/>
             <FCBool Name="ShowDimensionalName" Value="1"/>
             <FCText Name="DimensionalStringFormat">%N = %V</FCText>
+            <FCParamGroup Name="Elements"/>
+            <FCParamGroup Name="SolverAdvanced"/>
+            <FCBool Name="ExpandedMessagesWidget" Value="1"/>
+            <FCBool Name="ExpandedSolverAdvancedWidget" Value="0"/>
+            <FCBool Name="ExpandedConstraintsWidget" Value="1"/>
+            <FCBool Name="ExpandedElementsWidget" Value="1"/>
           </FCParamGroup>
           <FCParamGroup Name="PartDesign">
             <FCUInt Name="DefaultDatumLineColor" Value="4204138751"/>
@@ -212,7 +219,7 @@
             <FCUInt Name="WindowGlassColor" Value="1572326399"/>
             <FCInt Name="ifcMulticore" Value="0"/>
             <FCText Name="ifcRootElement">IfcProduct</FCText>
-            <FCText Name="ifcSkip"/>
+            <FCText Name="ifcSkip"></FCText>
             <FCInt Name="ifcImportModeArch" Value="0"/>
             <FCInt Name="ifcImportModeStruct" Value="0"/>
             <FCBool Name="ifcDebug" Value="0"/>
@@ -302,7 +309,7 @@
             <FCBool Name="dxfImportAsPrimitives" Value="0"/>
             <FCBool Name="dxfImportAsShapes" Value="1"/>
             <FCBool Name="dxfImportAsFused" Value="0"/>
-            <FCText Name="TeighaFileConverter"/>
+            <FCText Name="TeighaFileConverter"></FCText>
             <FCInt Name="DWGConversion" Value="0"/>
             <FCInt Name="svgPrecision" Value="3"/>
             <FCFloat Name="svgDeviation" Value="0.000000000000"/>
@@ -314,6 +321,7 @@
             <FCBool Name="svgMakeCuts" Value="1"/>
             <FCBool Name="SvgLinesBlack" Value="1"/>
             <FCBool Name="ocaareas" Value="0"/>
+            <FCText Name="textfont">DejaVu Sans</FCText>
           </FCParamGroup>
           <FCParamGroup Name="Measure">
             <FCParamGroup Name="Appearance">
@@ -379,7 +387,7 @@
               <FCBool Name="UseMaterialsFromWorkbenches" Value="1"/>
               <FCBool Name="UseMaterialsFromConfigDir" Value="1"/>
               <FCBool Name="UseMaterialsFromCustomDir" Value="1"/>
-              <FCText Name="CustomMaterialsDir"/>
+              <FCText Name="CustomMaterialsDir"></FCText>
             </FCParamGroup>
             <FCParamGroup Name="Cards">
               <FCBool Name="DeleteDuplicates" Value="1"/>
@@ -433,6 +441,7 @@
                   <FCBool Name="Test" Value="1"/>
                   <FCParamGroup Name="Test"/>
                 </FCParamGroup>
+                <FCParamGroup Name="User"/>
               </FCParamGroup>
               <FCBool Name="ShowFavorites" Value="1"/>
               <FCBool Name="ShowRecent" Value="1"/>
@@ -456,7 +465,7 @@
             <FCText Name="DefaultMaterial">7f9fd73b-50c9-41d8-b7b2-575a030c1eeb</FCText>
           </FCParamGroup>
           <FCParamGroup Name="BIM">
-            <FCText Name="WebGLTemplateCustomPath"/>
+            <FCText Name="WebGLTemplateCustomPath"></FCText>
             <FCBool Name="useCustomWebGLExportTemplate" Value="0"/>
           </FCParamGroup>
           <FCParamGroup Name="Import">
@@ -476,6 +485,24 @@
             <FCInt Name="ImportMode" Value="0"/>
           </FCParamGroup>
           <FCInt Name="PDFVersion" Value="0"/>
+          <FCParamGroup Name="History">
+            <FCBool Name="UseDefaultExcludedTypes" Value="1"/>
+            <FCText Name="CustomExcludedTypes"/>
+            <FCBool Name="CustomExcludedTypesInitialized" Value="0"/>
+            <FCBool Name="UseDefaultExcludedProperties" Value="1"/>
+            <FCText Name="CustomExcludedProperties"/>
+            <FCBool Name="CustomExcludedPropertiesInitialized" Value="0"/>
+            <FCBool Name="UseDefaultExcludedPropertiesByType" Value="1"/>
+            <FCText Name="CustomExcludedPropertiesByType"/>
+            <FCBool Name="CustomExcludedPropertiesByTypeInitialized" Value="0"/>
+            <FCInt Name="FloatPrecision" Value="2"/>
+            <FCText Name="***"/>
+          </FCParamGroup>
+          <FCParamGroup Name="ToolSeek">
+            <FCInt Name="ResultStyle" Value="0"/>
+            <FCBool Name="AllowFuzzy" Value="1"/>
+            <FCBool Name="SwitchWorkbench" Value="1"/>
+          </FCParamGroup>
         </FCParamGroup>
         <FCParamGroup Name="HighDPI"/>
         <FCParamGroup Name="OpenGL">
@@ -646,6 +673,7 @@
           <FCBool Name="UseAutoRotation" Value="1"/>
           <FCInt Name="BacklightIntensity" Value="70"/>
           <FCUInt Name="BacklightColor" Value="4076008703"/>
+          <FCBool Name="TouchpadScrollPans" Value="0"/>
         </FCParamGroup>
         <FCParamGroup Name="MainWindow">
           <FCText Name="OverlayActiveStyleSheet">OpenTheme_Overlay.qss</FCText>
@@ -654,9 +682,9 @@
           <FCText Name="Theme">OpenDark</FCText>
           <FCBool Name="Maximized" Value="0"/>
           <FCBool Name="StatusBar" Value="1"/>
-          <FCText Name="MainWindowState">AAAA/wAAAAD9AAAAAwAAAAAAAAEEAAAE4PwCAAAAAvsAAAAcAFMAZQBsAGUAYwB0AGkAbwBuACAAdgBpAGUAdwAAAAAA/////wAAAJkA////+wAAAAoATQBvAGQAZQBsAQAAAGsAAATgAAAAAAAAAAAAAAABAAAA1AAABOr8AgAAAAH7AAAACgBUAGEAcwBrAHMDAAAJHAAAAGMAAADWAAAE6gAAAAMAAAnwAAAA0fwBAAAAAfwAAAAAAAAJ8AAAAAAA////+v////8BAAAAAvsAAAAWAFIAZQBwAG8AcgB0ACAAdgBpAGUAdwAAAAAA/////wAAAFYA////+wAAABwAUAB5AHQAaABvAG4AIABjAG8AbgBzAG8AbABlAAAAAAD/////AAAAVgD///8AAAnwAAAE4AAAAAQAAAAEAAAACAAAAAj8AAAAAgAAAAIAAAAEAAAAEgBTAHQAcgB1AGMAdAB1AHIAZQEAAAAA/////wAAAAAAAAAAAAAAEgBXAG8AcgBrAGIAZQBuAGMAaAEAAAC7/////wAAAAAAAAAAAAAACABIAGUAbABwAQAAAsT/////AAAAAAAAAAAAAAAIAEUAZABpAHQBAAAC6/////8AAAAAAAAAAAAAAAIAAAATAAAADABTAG8AbABpAGQAcwEAAAAA/////wAAAAAAAAAAAAAAFABQAGEAcgB0ACAAVABvAG8AbABzAQAAASP/////AAAAAAAAAAAAAAAaAEIAbwBvAGwAZQBhAG4AIABUAG8AbwBsAHMBAAADjP////8AAAAAAAAAAAAAAAgARgBpAGwAZQAAAAAA/////wAAAAAAAAAAAAAAEgBDAGwAaQBwAGIAbwBhAHIAZAAAAAAA/////wAAAAAAAAAAAAAACgBNAGEAYwByAG8AAAAAAP////8AAAAAAAAAAAAAAAgAVgBpAGUAdwAAAAAA/////wAAAAAAAAAAAAAAIABJAG4AZABpAHYAaQBkAHUAYQBsACAAVgBpAGUAdwBzAAAAAAD/////AAAAAAAAAAAAAAA2AFAAYQByAHQAIABEAGUAcwBpAGcAbgAgAEgAZQBsAHAAZQByACAARgBlAGEAdAB1AHIAZQBzAAAAAAD/////AAAAAAAAAAAAAAA6AFAAYQByAHQAIABEAGUAcwBpAGcAbgAgAE0AbwBkAGUAbABpAG4AZwAgAEYAZQBhAHQAdQByAGUAcwAAAAAA/////wAAAAAAAAAAAAAAOgBQAGEAcgB0ACAARABlAHMAaQBnAG4AIABEAHIAZQBzAHMALQBVAHAAIABGAGUAYQB0AHUAcgBlAHMAAAAAAP////8AAAAAAAAAAAAAAEYAUABhAHIAdAAgAEQAZQBzAGkAZwBuACAAVAByAGEAbgBzAGYAbwByAG0AYQB0AGkAbwBuACAARgBlAGEAdAB1AHIAZQBzAAAAAAD/////AAAAAAAAAAAAAAAQAFMAawBlAHQAYwBoAGUAcgAAAAAA/////wAAAAAAAAAAAAAAEgBFAGQAaQB0ACAATQBvAGQAZQAAAAAA/////wAAAAAAAAAAAAAAFABHAGUAbwBtAGUAdAByAGkAZQBzAAAAAAD/////AAAAAAAAAAAAAAAWAEMAbwBuAHMAdAByAGEAaQBuAHQAcwAAAAAA/////wAAAAAAAAAAAAAAHABTAGsAZQB0AGMAaABlAHIAIABUAG8AbwBsAHMAAAAAAP////8AAAAAAAAAAAAAABwAQgAtAFMAcABsAGkAbgBlACAAVABvAG8AbABzAAAAAAD/////AAAAAAAAAAAAAAAcAFYAaQBzAHUAYQBsACAASABlAGwAcABlAHIAcwAAAAAA/////wAAAAAAAAAA</FCText>
+          <FCText Name="MainWindowState">AAAA/wAAAAD9AAAAAwAAAAAAAAEEAAAE4PwCAAAAAvsAAAAcAFMAZQBsAGUAYwB0AGkAbwBuACAAdgBpAGUAdwAAAAAA/////wAAAJkA////+wAAAAoATQBvAGQAZQBsAQAAAGsAAATgAAAAAAAAAAAAAAABAAAA1AAABOr8AgAAAAH7AAAACgBUAGEAcwBrAHMDAAAJHAAAAGMAAADWAAAE6gAAAAMAAAnwAAAA0fwBAAAAAfwAAAAAAAAJ8AAAAAAA////+v////8BAAAAAvsAAAAWAFIAZQBwAG8AcgB0ACAAdgBpAGUAdwAAAAAA/////wAAAFYA////+wAAABwAUAB5AHQAaABvAG4AIABjAG8AbgBzAG8AbABlAAAAAAD/////AAAAVgD///8AAAnwAAAE4AAAAAQAAAAEAAAACAAAAAj8AAAAAgAAAAIAAAAFAAAAEgBTAHQAcgB1AGMAdAB1AHIAZQEAAAAA/////wAAAAAAAAAAAAAAEgBXAG8AcgBrAGIAZQBuAGMAaAEAAAC7/////wAAAAAAAAAAAAAACABIAGUAbABwAQAAAzX/////AAAAAAAAAAAAAAAOAEMAdQBzAHQAbwBtADEBAAADXP////8AAAAAAAAAAAAAAAgARQBkAGkAdAEAAAPL/////wAAAAAAAAAAAAAAAgAAABMAAAAMAFMAbwBsAGkAZABzAQAAAAD/////AAAAAAAAAAAAAAAUAFAAYQByAHQAIABUAG8AbwBsAHMBAAABI/////8AAAAAAAAAAAAAABoAQgBvAG8AbABlAGEAbgAgAFQAbwBvAGwAcwEAAAOM/////wAAAAAAAAAAAAAACABGAGkAbABlAAAAAAD/////AAAAAAAAAAAAAAASAEMAbABpAHAAYgBvAGEAcgBkAAAAAAD/////AAAAAAAAAAAAAAAKAE0AYQBjAHIAbwAAAAAA/////wAAAAAAAAAAAAAACABWAGkAZQB3AAAAAAD/////AAAAAAAAAAAAAAAgAEkAbgBkAGkAdgBpAGQAdQBhAGwAIABWAGkAZQB3AHMAAAAAAP////8AAAAAAAAAAAAAADYAUABhAHIAdAAgAEQAZQBzAGkAZwBuACAASABlAGwAcABlAHIAIABGAGUAYQB0AHUAcgBlAHMAAAAAAP////8AAAAAAAAAAAAAADoAUABhAHIAdAAgAEQAZQBzAGkAZwBuACAATQBvAGQAZQBsAGkAbgBnACAARgBlAGEAdAB1AHIAZQBzAAAAAN3/////AAAAAAAAAAAAAAA6AFAAYQByAHQAIABEAGUAcwBpAGcAbgAgAEQAcgBlAHMAcwAtAFUAcAAgAEYAZQBhAHQAdQByAGUAcwAAAALw/////wAAAAAAAAAAAAAARgBQAGEAcgB0ACAARABlAHMAaQBnAG4AIABUAHIAYQBuAHMAZgBvAHIAbQBhAHQAaQBvAG4AIABGAGUAYQB0AHUAcgBlAHMAAAADp/////8AAAAAAAAAAAAAABAAUwBrAGUAdABjAGgAZQByAAAABP//////AAAAAAAAAAAAAAASAEUAZABpAHQAIABNAG8AZABlAAAAAAD/////AAAAAAAAAAAAAAAUAEcAZQBvAG0AZQB0AHIAaQBlAHMAAAAAAP////8AAAAAAAAAAAAAABYAQwBvAG4AcwB0AHIAYQBpAG4AdABzAAAAAAD/////AAAAAAAAAAAAAAAcAFMAawBlAHQAYwBoAGUAcgAgAFQAbwBvAGwAcwAAAAAA/////wAAAAAAAAAAAAAAHABCAC0AUwBwAGwAaQBuAGUAIABUAG8AbwBsAHMAAAAAAP////8AAAAAAAAAAAAAABwAVgBpAHMAdQBhAGwAIABIAGUAbABwAGUAcgBzAAAAAAD/////AAAAAAAAAAA=</FCText>
           <FCText Name="Geometry">0 0 2544 1388</FCText>
-          <FCBool Name="WindowStateRestored" Value="1"/>
+          <FCBool Name="WindowStateRestored" Value="0"/>
           <FCBool Name="TiledBackground" Value="0"/>
         </FCParamGroup>
         <FCParamGroup Name="Themes">
@@ -684,9 +712,9 @@
           <FCBool Name="NoPartialLoading" Value="0"/>
           <FCInt Name="prefLicenseType" Value="0"/>
           <FCText Name="prefLicenseUrl">https://en.wikipedia.org/wiki/All_rights_reserved</FCText>
-          <FCText Name="prefAuthor"/>
+          <FCText Name="prefAuthor"></FCText>
           <FCBool Name="prefSetAuthorOnSave" Value="0"/>
-          <FCText Name="prefCompany"/>
+          <FCText Name="prefCompany"></FCText>
           <FCBool Name="RecoveryEnabled" Value="1"/>
           <FCBool Name="AutoSaveEnabled" Value="1"/>
           <FCInt Name="AutoSaveTimeout" Value="15"/>
@@ -762,7 +790,7 @@
           <FCBool Name="PythonBlockCursor" Value="0"/>
           <FCBool Name="SavePythonHistory" Value="0"/>
           <FCInt Name="ProfilerInterval" Value="200"/>
-          <FCText Name="PathToPythonExecutable"/>
+          <FCText Name="PathToPythonExecutable"></FCText>
         </FCParamGroup>
         <FCParamGroup Name="TreeView">
           <FCInt Name="ColumnSize1" Value="242"/>
@@ -790,7 +818,7 @@
           <FCInt Name="LastTabIndex" Value="1"/>
         </FCParamGroup>
         <FCParamGroup Name="Workbenches">
-          <FCText Name="Ordered">PartWorkbench,PartDesignWorkbench,SketcherWorkbench,SurfaceWorkbench</FCText>
+          <FCText Name="Ordered">PartDesignWorkbench,SketcherWorkbench,PartWorkbench,SurfaceWorkbench,HistoryWorkbench</FCText>
           <FCText Name="Disabled">AssemblyWorkbench,BIMWorkbench,CAMWorkbench,DraftWorkbench,FemWorkbench,InspectionWorkbench,MaterialWorkbench,MeshWorkbench,OpenSCADWorkbench,PointsWorkbench,ReverseEngineeringWorkbench,RobotWorkbench,SpreadsheetWorkbench,TechDrawWorkbench,TestWorkbench,NoneWorkbench</FCText>
           <FCInt Name="WorkbenchSelectorType" Value="1"/>
         </FCParamGroup>
@@ -829,8 +857,8 @@
           <FCBool Name="HideUnlicensed" Value="0"/>
           <FCBool Name="HideNonFSFFreeLibre" Value="0"/>
           <FCBool Name="HideNonOSIApproved" Value="0"/>
-          <FCText Name="AddonsScoreURL"/>
-          <FCText Name="CustomRepositories"/>
+          <FCText Name="AddonsScoreURL"></FCText>
+          <FCText Name="CustomRepositories"></FCText>
           <FCBool Name="readWarning2022" Value="1"/>
           <FCInt Name="ViewStyle" Value="1"/>
           <FCText Name="last_fetched_addon_catalog_cache_hash">a9893d56ebde9c11b0d786b6d26ae516c29fd48c248fc26bd02afe12140901ed</FCText>
@@ -852,6 +880,8 @@
           </FCParamGroup>
           <FCText Name="HiddenBottomWidgets">Report view;;Python console</FCText>
         </FCParamGroup>
+        <FCParamGroup Name="Paths"/>
+        <FCParamGroup Name="DependencyGraph"/>
       </FCParamGroup>
       <FCParamGroup Name="Macro">
         <FCParamGroup Name="Macros"/>
@@ -870,11 +900,12 @@
             <FCText Name="Sizes">30</FCText>
             <FCInt Name="Width" Value="407"/>
             <FCInt Name="Height" Value="1068"/>
+            <FCBool Name="Transparent" Value="1"/>
           </FCParamGroup>
           <FCParamGroup Name="OverlayTop">
             <FCText Name="Widgets"></FCText>
             <FCText Name="Sizes"></FCText>
-            <FCInt Name="Width" Value="1877"/>
+            <FCInt Name="Width" Value="2402"/>
             <FCInt Name="Height" Value="381"/>
           </FCParamGroup>
           <FCParamGroup Name="OverlayBottom">
@@ -885,8 +916,8 @@
           </FCParamGroup>
           <FCBool Name="Std_ReportView" Value="0"/>
           <FCBool Name="Std_SelectionView" Value="0"/>
-          <FCBool Name="Std_ComboView" Value="1"/>
-          <FCBool Name="Std_TaskView" Value="1"/>
+          <FCBool Name="Std_ComboView" Value="0"/>
+          <FCBool Name="Std_TaskView" Value="0"/>
           <FCBool Name="Std_PythonView" Value="0"/>
         </FCParamGroup>
         <FCParamGroup Name="StatusBar"/>
@@ -912,15 +943,42 @@
           <FCBool Name="Sketcher" Value="1"/>
           <FCBool Name="Spreadsheet" Value="1"/>
           <FCBool Name="Surface" Value="1"/>
+          <FCBool Name="Custom1" Value="1"/>
+          <FCBool Name="History" Value="1"/>
+          <FCBool Name="Edit Mode" Value="1"/>
+          <FCBool Name="Geometries" Value="1"/>
+          <FCBool Name="Constraints" Value="1"/>
+          <FCBool Name="Sketcher Tools" Value="1"/>
+          <FCBool Name="B-Spline Tools" Value="1"/>
+          <FCBool Name="Visual Helpers" Value="1"/>
         </FCParamGroup>
       </FCParamGroup>
       <FCParamGroup Name="Workbench">
         <FCParamGroup Name="Global">
-          <FCParamGroup Name="Toolbar"/>
+          <FCParamGroup Name="Toolbar">
+            <FCParamGroup Name="Custom_1">
+              <FCText Name="Name">Custom1</FCText>
+              <FCBool Name="Active" Value="1"/>
+              <FCText Name="Std_Measure">FreeCAD</FCText>
+              <FCText Name="Std_DependencyGraph">FreeCAD</FCText>
+              <FCText Name="ToolSeek_Open">command</FCText>
+            </FCParamGroup>
+          </FCParamGroup>
         </FCParamGroup>
         <FCParamGroup Name="PartDesignWorkbench">
           <FCParamGroup Name="Toolbar"/>
         </FCParamGroup>
+        <FCParamGroup Name="PartWorkbench">
+          <FCParamGroup Name="Toolbar"/>
+        </FCParamGroup>
+      </FCParamGroup>
+      <FCParamGroup Name="History">
+        <FCParamGroup Name="PadLength"/>
+        <FCParamGroup Name="PadLength2"/>
+        <FCParamGroup Name="PadOffset"/>
+        <FCParamGroup Name="PadOffset2"/>
+        <FCParamGroup Name="PadTaperAngle"/>
+        <FCParamGroup Name="PadTaperAngle2"/>
       </FCParamGroup>
     </FCParamGroup>
     <FCParamGroup Name="Tux">
@@ -928,14 +986,14 @@
         <FCParamGroup Name="User">
           <FCParamGroup Name="PartDesignWorkbench">
             <FCBool Name="Saved" Value="1"/>
-            <FCText Name="Top">Structure,Workbench,Help,Edit,Break,Part Design Helper Features,Part Design Modeling Features,Part Design Dress-Up Features,Part Design Transformation Features</FCText>
+            <FCText Name="Top">Structure,Workbench,Help,Custom1,Edit,Break,Part Design Helper Features,Part Design Modeling Features,Part Design Dress-Up Features,Part Design Transformation Features</FCText>
             <FCText Name="Left"/>
             <FCText Name="Right"/>
             <FCText Name="Bottom"/>
           </FCParamGroup>
           <FCParamGroup Name="PartWorkbench">
             <FCBool Name="Saved" Value="1"/>
-            <FCText Name="Top">Structure,Workbench,Help,Edit,Break,Solids,Part Tools,Boolean Tools</FCText>
+            <FCText Name="Top">Structure,Workbench,Help,Custom1,Edit,Break,Solids,Part Tools,Boolean Tools</FCText>
             <FCText Name="Left"/>
             <FCText Name="Right"/>
             <FCText Name="Bottom"/>
@@ -943,6 +1001,13 @@
           <FCParamGroup Name="SketcherWorkbench"/>
           <FCParamGroup Name="SpreadsheetWorkbench"/>
           <FCParamGroup Name="SurfaceWorkbench"/>
+          <FCParamGroup Name="HistoryWorkbench"/>
+          <FCParamGroup Name="XRWorkbench"/>
+        </FCParamGroup>
+        <FCParamGroup Name="System">
+          <FCParamGroup Name="SketcherWorkbench"/>
+          <FCParamGroup Name="SurfaceWorkbench"/>
+          <FCParamGroup Name="HistoryWorkbench"/>
         </FCParamGroup>
       </FCParamGroup>
       <FCParamGroup Name="NavigationIndicator">
