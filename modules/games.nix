@@ -4,6 +4,8 @@
     enable = true;
     remotePlay.openFirewall = true;
     localNetworkGameTransfers.openFirewall = true;
+    # Make GE-Proton available in Steam's Compatibility-tool selector.
+    extraCompatPackages = [ pkgs.proton-ge-bin ];
   };
 
   environment.systemPackages = with pkgs; [
