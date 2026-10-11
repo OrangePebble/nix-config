@@ -14,10 +14,9 @@
           name = "niri";
           customConfig = ''
             // Taken from ./config/dms/outputs.kdl
-            // DP-4 is the motherboard DisplayPort driven by the Ryzen iGPU.
-            // DP-1 belongs to the Radeon reserved for Windows via VFIO.
-            output "DP-4" {
-                mode "1920x1080@144.001"
+            // The Radeon drives the host greeter while win11 is off.
+            output "DP-1" {
+                mode "2560x1440@165.002"
                 scale 1
                 position x=0 y=0
                 variable-refresh-rate on-demand=true

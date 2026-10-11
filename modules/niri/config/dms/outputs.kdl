@@ -10,10 +10,11 @@ output "DP-1" {
     }
 }
 
-output "DP-4" {
+// DP-2 is a Radeon output. It is unavailable while win11 owns the Radeon.
+output "DP-2" {
     mode "1920x1080@144.001"
     scale 1
-    position x=2560 y=360
+    position x=2560 y=180
     variable-refresh-rate on-demand=true
 }
 
