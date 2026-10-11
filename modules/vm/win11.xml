@@ -2,10 +2,10 @@
   This is a persistent libvirt domain definition, not a virt-manager settings
   file. Follow README.md to build the disk, import it, and start the VM.
 
-  The Radeon is already bound to vfio-pci at host boot; NixOS continues using
-  the Ryzen iGPU on DP-4. This staging definition deliberately retains all USB
-  controllers and physical networking on the host. Never configure the domain
-  to autostart.
+  NixOS normally owns the Radeon with amdgpu. The win11-start system service
+  stops the graphical session and lets libvirt bind the Radeon to vfio-pci only
+  while this VM runs; the release hook restores the host display afterwards.
+  Never configure this domain to autostart or start it with `virsh start`.
 
   The XML comments are setup reminders. Keep README.md as the durable guide:
   virt-manager or libvirt may rewrite a domain definition without preserving
@@ -86,9 +86,10 @@
     <!--
       No QXL/SPICE display: Windows must use only the passed-through Radeon.
       QXL previously appeared as a second virtual monitor and claimed the
-      Windows login prompt. Physical Logitech/Bluetooth input is passed through
-      separately, so a virtual display/input recovery path is no longer needed.
+      Windows login prompt. Host USB leaf devices are attached dynamically.
     -->
+    <!-- Reserve sufficient ports for all leaf devices forwarded from 10:00.0. -->
+    <controller type='usb' index='0' model='qemu-xhci' ports='15'/>
     <input type='tablet' bus='usb'/>
     <input type='mouse' bus='ps2'/>
     <input type='keyboard' bus='ps2'/>
@@ -98,11 +99,9 @@
     <memballoon model='none'/>
 
     <!--
-      Staging configuration: keep every USB controller and physical NIC with
-      NixOS. The earlier all-controller handoff reset the host before the VM
-      reached QEMU. Use the SPICE console's virtual keyboard/mouse and e1000e
-      NAT adapter until the guest boots reliably. Add host USB controllers
-      later, one at a time, only after successful shut-down/recovery tests.
+      USB controller passthrough is deliberately limited to the two safe
+      controllers below. Controller 10:00.0 shares an IOMMU group with a PCIe
+      bridge and controller 13:00.0 reset the host; both remain with NixOS.
     -->
 
     <!--
@@ -127,24 +126,11 @@
     </hostdev>
 
     <!--
-      Controller 0000:10:00.0 is unsafe to hand off as a whole. Pass only its
-      Logitech keyboard/mouse receiver and MediaTek Bluetooth adapter
-      individually. Keep the receiver in a port mapped to 0000:10:00.0; it
-      must not be moved to already-passed controller 0000:12:00.4, or libvirt
-      would see the receiver twice.
+      Devices from unsafe chipset controller 0000:10:00.0 remain with NixOS.
+      Their individual hostdev definitions were accepted by libvirt but did not
+      function reliably in Windows. Do not pass the controller itself because
+      it shares an IOMMU group with a PCIe bridge.
     -->
-    <hostdev mode='subsystem' type='usb' managed='yes'>
-      <source>
-        <vendor id='0x046d'/>
-        <product id='0xc547'/>
-      </source>
-    </hostdev>
-    <hostdev mode='subsystem' type='usb' managed='yes'>
-      <source>
-        <vendor id='0x0e8d'/>
-        <product id='0x0616'/>
-      </source>
-    </hostdev>
 
     <!-- AMD GPU: 0000:03:00.0 / 1002:73bf -->
     <hostdev mode='subsystem' type='pci' managed='yes'>

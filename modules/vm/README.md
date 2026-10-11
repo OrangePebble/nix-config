@@ -1,144 +1,141 @@
-# Windows GPU passthrough
+# Windows Radeon passthrough
 
-> [!IMPORTANT]
-> This is a two-GPU configuration. The Ryzen 7 7700 iGPU at `0000:12:00.0`
-> drives NixOS through the motherboard DisplayPort (`DP-4`); the discrete Radeon
-> is reserved for Windows. This replaces the unsafe live single-GPU handoff,
-> which reset the host and must not be reintroduced.
+`default.nix` configures the NixOS host and the experimental live GPU handoff.
+`win11.xml` is the persistent libvirt domain definition for the `win11` guest.
 
-`default.nix` configures the NixOS host. `win11.xml` is the persistent libvirt
-domain definition for the `win11` guest.
+> [!WARNING]
+> The live Radeon handoff is experimental. It deliberately stops the NixOS
+> graphical session and terminates every process with the Radeon DRM nodes open
+> before libvirt binds the GPU to VFIO. Keep SSH, Tailscale, or another recovery
+> path available. Do **not** start this VM with `virsh start`; use
+> `sudo systemctl start win11-start`.
 
-The checked-in `win11.xml` is a **GPU-only staging configuration**. Windows
-owns the discrete Radeon while NixOS retains its iGPU desktop, all USB
-controllers, Bluetooth, wired Ethernet, and local input. The earlier attempt
-to hand all USB controllers to Windows reset the host before QEMU started, so
-those devices must not be re-added until the GPU-only VM has booted and shut
-down reliably.
+## Hardware findings
 
-Do **not** enable autostart for this domain.
+| Device | PCI address / group | Conclusion |
+| --- | --- | --- |
+| Radeon GPU | `0000:03:00.0`, group 14 | Used by NixOS with `amdgpu` while Windows is off; dynamically bound to `vfio-pci` while Windows runs. |
+| Radeon audio | `0000:03:00.1`, group 15 | Moves with the Radeon to Windows. |
+| Ryzen iGPU | `0000:12:00.0`, group 29 | Keep enabled in firmware as a recovery/headless fallback. It does not need a monitor for the normal live-switch workflow. |
+| USB controller | `0000:12:00.3`, group 31 | Safe Windows-only controller; no host devices were present during discovery. |
+| USB controller | `0000:12:00.4`, group 32 | Safe Windows controller for the Rift and anything plugged into its physical ports. |
+| USB controller | `0000:10:00.0`, group 27 with bridge `0000:06:0c.0` | **Never pass through as PCI.** Resetting it destabilized the host. Keep it owned by NixOS. |
+| USB controller | `0000:13:00.0`, group 34 | Detaching/resetting it caused a host reset; excluded from the guest. |
+| Realtek Ethernet | `0000:0e:00.0`, group 25 | Not currently passed. Windows uses the virtual e1000e NAT adapter. |
+| MediaTek Wi-Fi | `0000:0f:00.0`, group 26 | Not passed; NixOS retains Wi-Fi and remote recovery. |
 
-## Host configuration
+## GPU switching model
 
-The NixOS module enables AMD IOMMU, loads the VFIO modules from the initrd, and
-binds the Radeon GPU (`1002:73bf`) plus its audio function (`1002:ab28`) to
-`vfio-pci` at boot. It also configures libvirt, virt-manager, QEMU/KVM, OVMF
-firmware discovery, TPM emulation, and the default NAT network prerequisites.
+NixOS uses Radeon outputs `DP-1` and `DP-2` while Windows is off. Starting
+`win11-start` stops the display manager, DMS, niri, EasyEffects, and any other
+Radeon DRM users. It waits for the DRM nodes to be clear, then libvirt assigns
+the Radeon to Windows. Windows uses those same physical Radeon outputs.
 
-There is intentionally no GPU lifecycle hook. NixOS never claims the discrete
-Radeon, so starting and stopping Windows does not stop the display manager or
-tear down the NixOS graphical session.
+When Windows shuts down, libvirt reattaches the Radeon to `amdgpu`. Its QEMU
+`release:end` hook starts the display manager, waits for niri's Wayland socket,
+and starts DMS again. The user session is intentionally replaced; GPU-using
+applications such as Discord may be killed during the handoff.
 
-Apply host changes and reboot before using the VM:
+This avoids the original unsafe approach, which tried to detach the active GPU
+while niri/Mesa still held it open and caused host resets.
+
+## Starting and stopping
+
+The VM must be shut down before redefining its XML. The `<uuid>` in
+`win11.xml` is intentionally stable; do not use `virsh undefine --nvram` for
+normal updates because it replaces the virtual TPM identity.
+
+Apply NixOS changes and update libvirt hooks:
 
 ```sh
 sudo nixos-rebuild switch --flake .#orange
-sudo reboot
+sudo systemctl restart libvirtd-config.service
 ```
 
-After boot, verify that IOMMU was enabled:
+Update the stopped domain after editing XML:
 
 ```sh
-cat /proc/cmdline
-# Expected to include: amd_iommu=on iommu=pt
+sudo virsh -c qemu:///system define modules/vm/win11.xml
 ```
 
-## Devices transferred to Windows
+Start Windows only through the handoff service:
 
-All addresses below were detected on this host. Each device is isolated in its
-own IOMMU group, so libvirt can manage it with `managed='yes'`.
+```sh
+sudo systemctl start win11-start
+```
 
-| Device           | PCI address    | IOMMU group | Effect while `win11` runs                                                                                     |
-| ---------------- | -------------- | ----------: | ------------------------------------------------------------------------------------------------------------- |
-| Ryzen iGPU       | `0000:12:00.0` |          29 | NixOS host GPU; motherboard DisplayPort / `DP-4`.                                                             |
-| AMD GPU          | `0000:03:00.0` |          14 | Bound to VFIO at boot; Windows owns its physical display output.                                              |
-| AMD GPU audio    | `0000:03:00.1` |          15 | Windows owns HDMI/DisplayPort audio.                                                                          |
-| USB controller   | `0000:10:00.0` |          27 | Windows owns the Bluetooth adapter, Logitech keyboard/mouse receiver, USB audio, hubs, and connected sensors. |
-| USB controller   | `0000:12:00.3` |          31 | Reserved for Windows USB ports.                                                                               |
-| USB controller   | `0000:12:00.4` |          32 | Windows owns the Rift headset, Rift audio, and Rift sensors.                                                  |
-| USB controller   | `0000:13:00.0` |          34 | Reserved for Windows USB ports.                                                                               |
-| Realtek Ethernet | `0000:0e:00.0` |          25 | Windows owns `enp14s0`; NixOS loses wired networking.                                                         |
+Shut Windows down normally. Do not force it off unless recovery requires it.
+The display manager should return automatically. If niri returns with only a
+gray background, start DMS manually:
 
-The MediaTek Wi-Fi device (`0000:0f:00.0`, `wlp15s0`, IOMMU group 26) is **not**
-passed through. NixOS keeps Wi-Fi while the VM runs, so the existing virtual
-network adapter can provide a recovery connection for Windows.
+```sh
+systemctl --user reset-failed dms.service
+systemctl --user start dms.service
+```
 
-## Create and import the VM
+## USB policy
 
-The XML expects a sparse QCOW2 disk at
-`/var/lib/libvirt/images/win11.qcow2` and the Windows installer ISO at:
+The stable solution is controller passthrough for `12:00.3` and `12:00.4`.
+Use their physical ports as Windows-only ports. A dedicated PCIe USB controller
+in its own IOMMU group is the recommended long-term way to obtain a complete
+Windows USB zone.
+
+### Why `10:00.0` is excluded
+
+`10:00.0` is an AMD 600-series chipset USB 3.2 controller. Its IOMMU group
+also contains upstream bridge `06:0c.0`; it is not independently isolated.
+Passing the controller reset/disconnected host USB and destabilized the system.
+
+Individual USB hostdev entries were tried for the Logitech receiver, MediaTek
+Bluetooth, and two Cosmos devices. Libvirt accepted vendor/product selectors
+and, on this host's libvirt 12.7, stable USB bus/port selectors. The Cosmos
+serial numbers are:
 
 ```text
-/home/pebble/Documents/en-us_windows_11_consumer_editions_version_26h2_x64_dvd_af326c9d.iso
+40BB6A33D20485C2  (USB bus 1, port 1)
+3787A138137FBDB5  (USB bus 1, port 9)
 ```
 
-Create the 200 GiB virtual disk once:
+However, the individual devices did not behave reliably in Windows. Automatic
+forwarding of every non-hub device behind `10:00.0` was also tested; libvirt
+attached the devices, but it did not provide reliable Windows input/Bluetooth
+behavior and has been removed. Keep `10:00.0` on NixOS.
+
+### Bluetooth
+
+The MediaTek Bluetooth USB device is `0e8d:0616`. If it is ever attached to
+Windows, Windows may need the matching MediaTek Bluetooth driver from MSI or
+Windows Update; its absence from Device Manager can be a guest-driver issue,
+not only a libvirt matching issue.
+
+## Guest devices
+
+- 24 GiB RAM, 12 vCPUs (6 cores × 2 threads)
+- UEFI/Q35, TPM 2.0, Hyper-V enlightenments
+- 200 GiB sparse QCOW2 disk at `/var/lib/libvirt/images/win11.qcow2`
+- Windows ISO at
+  `/home/pebble/Documents/en-us_windows_11_consumer_editions_version_26h2_x64_dvd_af326c9d.iso`
+- e1000e NAT networking through libvirt's `default` network
+- No QXL/SPICE video device: it previously became the Windows primary virtual
+  monitor and hid the physical Radeon login screen.
+
+Create the disk once if it does not exist:
 
 ```sh
 sudo qemu-img create -f qcow2 /var/lib/libvirt/images/win11.qcow2 200G
 ```
 
-QCOW2 is sparse: it has 200 GiB of guest-visible capacity but consumes host
-disk space only as Windows writes to it.
-
-Enable libvirt's default NAT network once. The XML retains an e1000e adapter
-for Windows installation and recovery; it uses the NixOS Wi-Fi connection and
-does not require a Windows VirtIO driver.
-
-```sh
-sudo virsh -c qemu:///system net-autostart default
-sudo virsh -c qemu:///system net-start default
-```
-
-If `net-start` reports that the network is already active, no action is needed.
-
-Import or update the persistent VM definition while the VM is shut down:
-
-```sh
-sudo virsh -c qemu:///system define modules/vm/win11.xml
-sudo virsh -c qemu:///system list --all
-```
-
-`virt-manager` will show the imported VM as `win11`. If virt-manager edits the
-hardware, preserve this repository XML separately and re-run `virsh define`
-when you want the checked-in definition to be authoritative.
-
-## Starting, installing, and stopping
-
-Start from an SSH session or a host virtual terminal rather than relying on the
-host graphical desktop, because the start hook stops it:
-
-```sh
-sudo virsh -c qemu:///system start win11
-```
-
-The monitor connected to the passed-through AMD GPU should show Windows Setup.
-After startup, the passed-through keyboard/mouse and Bluetooth belong to
-Windows, not NixOS. Keep a recovery method available for the first boot, such
-as SSH from another machine or physical power/reset access.
-
-The virtual disk is SATA and the virtual recovery NIC is e1000e, which lets
-Windows Setup see storage and networking without a separate VirtIO driver ISO.
-Install the AMD Windows GPU driver after Windows is installed.
-
-After installation, eject the installer ISO so subsequent boots use the Windows
-disk directly:
-
-```sh
-sudo virsh -c qemu:///system change-media win11 sdb --eject --config
-```
-
-Shut down Windows normally. Do not force it off unless recovery requires it;
-a normal shutdown gives the guest time to release devices. Once it has stopped,
-libvirt returns all PCI devices to NixOS and the host display manager starts.
-
-## Expanding the Windows disk
-
-Shut down the VM first, then extend the QCOW2 virtual capacity:
+The QCOW2 file is sparse: its guest-visible capacity is 200 GiB, while host
+storage grows as Windows writes data. Expand it only while the VM is off:
 
 ```sh
 sudo qemu-img resize /var/lib/libvirt/images/win11.qcow2 +100G
 ```
 
-Then boot Windows and use **Disk Management** to extend the C: partition. The
-example changes the virtual capacity from 200 GiB to 300 GiB.
+Then extend the partition in Windows Disk Management.
+
+After installation, eject the Windows installer ISO:
+
+```sh
+sudo virsh -c qemu:///system change-media win11 sdb --eject --config
+```

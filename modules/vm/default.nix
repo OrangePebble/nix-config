@@ -6,7 +6,6 @@
 let
   vmName = "win11";
   radeonPciAddress = "0000:03:00.0";
-
   # This service, rather than `virsh start`, performs the experimental live
   # Radeon handoff. It runs outside the graphical user session that it stops.
   startVm = pkgs.writeShellScript "${vmName}-start" ''
@@ -49,6 +48,10 @@ let
     # the graceful service shutdown above; the host session is being replaced
     # by Windows at this point, so these processes must not survive.
     ${pkgs.psmisc}/bin/fuser -k -TERM "''${tmp_drm_nodes[@]}" || true
+    ${pkgs.coreutils}/bin/sleep 1
+    # Some Electron clients ignore SIGTERM while their wrapper keeps the render
+    # node open. A forced kill is required before a device-driver handoff.
+    ${pkgs.psmisc}/bin/fuser -k -KILL "''${tmp_drm_nodes[@]}" || true
 
     tmp_attempt=0
     while ${pkgs.psmisc}/bin/fuser -s "''${tmp_drm_nodes[@]}"; do
@@ -66,6 +69,7 @@ let
       ${restoreDisplay}
       exit 1
     fi
+
   '';
 
   restoreDisplay = pkgs.writeShellScript "${vmName}-restore-display" ''
@@ -83,14 +87,16 @@ let
     # after niri starts again. Start it only after niri owns a Wayland socket.
     tmp_uid="$(${pkgs.coreutils}/bin/id -u ${vars.username})"
     tmp_attempt=0
-    while ! ${pkgs.util-linux}/bin/runuser -u ${vars.username} -- ${pkgs.coreutils}/bin/env \
+    while ! { [ -S "/run/user/$tmp_uid/wayland-1" ] && ${pkgs.util-linux}/bin/runuser -u ${vars.username} -- ${pkgs.coreutils}/bin/env \
       XDG_RUNTIME_DIR="/run/user/$tmp_uid" \
       DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$tmp_uid/bus" \
-      ${pkgs.systemd}/bin/systemctl --user is-active --quiet niri.service; do
+      ${pkgs.systemd}/bin/systemctl --user is-active --quiet niri.service; }; do
       tmp_attempt=$((tmp_attempt + 1))
       [ "$tmp_attempt" -lt 300 ] || exit 0
       ${pkgs.coreutils}/bin/sleep 0.1
     done
+    # DMS/Quickshell must connect after niri has bound its Wayland socket.
+    ${pkgs.coreutils}/bin/sleep 1
 
     ${pkgs.util-linux}/bin/runuser -u ${vars.username} -- ${pkgs.coreutils}/bin/env \
       XDG_RUNTIME_DIR="/run/user/$tmp_uid" \
@@ -128,6 +134,10 @@ in
     };
   };
 
+  # USB policy: pass only PCI controllers 12:00.3 and 12:00.4 from win11.xml.
+  # Controller 10:00.0 shares an IOMMU group with an upstream bridge. Both
+  # whole-controller and individual-device experiments from it were unreliable,
+  # so no automatic USB forwarding is configured here.
   systemd.services."${vmName}-start" = {
     description = "Safely hand the Radeon to ${vmName}";
     serviceConfig.Type = "oneshot";
@@ -162,6 +172,6 @@ in
   # Experimental live-switch usage:
   # 1. Start Windows only with `sudo systemctl start win11-start`.
   # 2. Do not run `virsh start win11`: it bypasses the DRM-user safety check.
-  # 3. Shut Windows down normally. The libvirt release hook restarts the host
-  #    display manager after amdgpu has reclaimed the Radeon.
+  # 3. Shut Windows down normally. The libvirt release hook restarts niri and
+  #    DMS after amdgpu has reclaimed the Radeon; see README.md for recovery.
 }
