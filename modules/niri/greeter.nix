@@ -14,19 +14,14 @@
           name = "niri";
           customConfig = ''
             // Taken from ./config/dms/outputs.kdl
-            output "DP-1" {
-                mode "2560x1440@165.002"
+            // DP-4 is the motherboard DisplayPort driven by the Ryzen iGPU.
+            // DP-1 belongs to the Radeon reserved for Windows via VFIO.
+            output "DP-4" {
+                mode "1920x1080@144.001"
                 scale 1
                 position x=0 y=0
                 variable-refresh-rate on-demand=true
                 focus-at-startup
-            }
-            output "DP-2" {
-                off
-                mode "1920x1080@144.001"
-                scale 1
-                position x=2560 y=180
-                variable-refresh-rate on-demand=true
             }
             // Taken from https://danklinux.com/docs/dankgreeter/configuration#niri
             hotkey-overlay {

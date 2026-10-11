@@ -168,6 +168,9 @@
 
     # PDF editor.
     pdf4qt
+
+    # Disk usage analyzer with the tree/block view. Alternative to WinDirStat and KDirStat.
+    qdirstat
   ];
 
   hm = {

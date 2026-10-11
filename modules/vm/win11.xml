@@ -1,0 +1,165 @@
+<!--
+  This is a persistent libvirt domain definition, not a virt-manager settings
+  file. Follow README.md to build the disk, import it, and start the VM.
+
+  The Radeon is already bound to vfio-pci at host boot; NixOS continues using
+  the Ryzen iGPU on DP-4. This staging definition deliberately retains all USB
+  controllers and physical networking on the host. Never configure the domain
+  to autostart.
+
+  The XML comments are setup reminders. Keep README.md as the durable guide:
+  virt-manager or libvirt may rewrite a domain definition without preserving
+  these comments.
+-->
+<domain type='kvm'>
+  <name>win11</name>
+  <!-- Keep this stable so `virsh define` updates rather than recreates the TPM. -->
+  <uuid>f4c49e31-be75-41d6-beaa-c601d54c21a0</uuid>
+  <memory unit='KiB'>25165824</memory>
+  <currentMemory unit='KiB'>25165824</currentMemory>
+  <memoryBacking>
+    <source type='memfd'/>
+    <access mode='shared'/>
+  </memoryBacking>
+  <vcpu placement='static'>12</vcpu>
+  <cpu mode='host-passthrough' check='none' migratable='on'>
+    <topology sockets='1' dies='1' clusters='1' cores='6' threads='2'/>
+  </cpu>
+  <os firmware='efi'>
+    <type arch='x86_64' machine='q35'>hvm</type>
+    <boot dev='cdrom'/>
+    <boot dev='hd'/>
+    <bootmenu enable='yes'/>
+  </os>
+  <features>
+    <acpi/>
+    <apic/>
+    <hyperv mode='custom'>
+      <relaxed state='on'/>
+      <vapic state='on'/>
+      <spinlocks state='on' retries='8191'/>
+      <vpindex state='on'/>
+      <runtime state='on'/>
+      <synic state='on'/>
+      <stimer state='on'/>
+      <reset state='on'/>
+      <vendor_id state='on' value='KVM Hv'/>
+    </hyperv>
+    <vmport state='off'/>
+    <smm state='on'/>
+  </features>
+  <clock offset='localtime'>
+    <timer name='rtc' tickpolicy='catchup'/>
+    <timer name='pit' tickpolicy='delay'/>
+    <timer name='hpet' present='no'/>
+    <timer name='hypervclock' present='yes'/>
+  </clock>
+  <on_poweroff>destroy</on_poweroff>
+  <on_reboot>restart</on_reboot>
+  <on_crash>destroy</on_crash>
+  <devices>
+    <disk type='file' device='disk'>
+      <driver name='qemu' type='qcow2' cache='none' io='native' discard='unmap'/>
+      <source file='/var/lib/libvirt/images/win11.qcow2'/>
+      <!-- SATA works with the Windows installer without a separate VirtIO ISO. -->
+      <target dev='sda' bus='sata'/>
+    </disk>
+    <disk type='file' device='cdrom'>
+      <driver name='qemu' type='raw'/>
+      <source file='/home/pebble/Documents/en-us_windows_11_consumer_editions_version_26h2_x64_dvd_af326c9d.iso'/>
+      <target dev='sdb' bus='sata'/>
+      <readonly/>
+    </disk>
+    <!-- Windows includes a driver for e1000e; switch to VirtIO after installing its driver. -->
+    <interface type='network'>
+      <source network='default'/>
+      <model type='e1000e'/>
+    </interface>
+    <serial type='pty'>
+      <target type='isa-serial' port='0'>
+        <model name='isa-serial'/>
+      </target>
+    </serial>
+    <console type='pty'>
+      <target type='serial' port='0'/>
+    </console>
+    <!-- Recovery display for installation and troubleshooting. -->
+    <graphics type='spice' autoport='yes'>
+      <listen type='address'/>
+    </graphics>
+    <video>
+      <model type='qxl' ram='65536' vram='65536' vgamem='16384' heads='1' primary='yes'/>
+    </video>
+    <channel type='spicevmc'>
+      <target type='virtio' name='com.redhat.spice.0'/>
+    </channel>
+    <input type='tablet' bus='usb'/>
+    <input type='mouse' bus='ps2'/>
+    <input type='keyboard' bus='ps2'/>
+    <tpm model='tpm-crb'>
+      <backend type='emulator' version='2.0'/>
+    </tpm>
+    <memballoon model='none'/>
+
+    <!--
+      Staging configuration: keep every USB controller and physical NIC with
+      NixOS. The earlier all-controller handoff reset the host before the VM
+      reached QEMU. Use the SPICE console's virtual keyboard/mouse and e1000e
+      NAT adapter until the guest boots reliably. Add host USB controllers
+      later, one at a time, only after successful shut-down/recovery tests.
+    -->
+
+    <!--
+      Second staged USB controller: IOMMU group 31. It has no currently
+      connected host devices and is reserved for Windows-only physical ports.
+    -->
+    <hostdev mode='subsystem' type='pci' managed='yes'>
+      <source>
+        <address domain='0x0000' bus='0x12' slot='0x00' function='0x3'/>
+      </source>
+    </hostdev>
+
+    <!--
+      First staged USB passthrough device: the isolated Rift controller in
+      IOMMU group 32. It carries the Rift headset, audio, and sensors, but not
+      the host keyboard/mouse or Bluetooth controller.
+    -->
+    <hostdev mode='subsystem' type='pci' managed='yes'>
+      <source>
+        <address domain='0x0000' bus='0x12' slot='0x00' function='0x4'/>
+      </source>
+    </hostdev>
+
+    <!--
+      Pass individual USB devices rather than controller 0000:10:00.0. The
+      whole-controller handoff is unsafe on this host. These move only the
+      Logitech keyboard/mouse receiver and MediaTek Bluetooth adapter to
+      Windows; the host USB controller remains bound to NixOS.
+    -->
+    <hostdev mode='subsystem' type='usb' managed='yes'>
+      <source>
+        <vendor id='0x046d'/>
+        <product id='0xc547'/>
+      </source>
+    </hostdev>
+    <hostdev mode='subsystem' type='usb' managed='yes'>
+      <source>
+        <vendor id='0x0e8d'/>
+        <product id='0x0616'/>
+      </source>
+    </hostdev>
+
+    <!-- AMD GPU: 0000:03:00.0 / 1002:73bf -->
+    <hostdev mode='subsystem' type='pci' managed='yes'>
+      <source>
+        <address domain='0x0000' bus='0x03' slot='0x00' function='0x0'/>
+      </source>
+    </hostdev>
+    <!-- GPU HDMI/DisplayPort audio: 0000:03:00.1 / 1002:ab28 -->
+    <hostdev mode='subsystem' type='pci' managed='yes'>
+      <source>
+        <address domain='0x0000' bus='0x03' slot='0x00' function='0x1'/>
+      </source>
+    </hostdev>
+  </devices>
+</domain>
