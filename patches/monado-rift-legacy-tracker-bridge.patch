@@ -1,0 +1,844 @@
+diff --git a/src/xrt/drivers/CMakeLists.txt b/src/xrt/drivers/CMakeLists.txt
+index 5ec9910..4d1bf63 100644
+--- a/src/xrt/drivers/CMakeLists.txt
++++ b/src/xrt/drivers/CMakeLists.txt
+@@ -320,6 +320,36 @@ if(XRT_BUILD_DRIVER_RIFT)
+ 		rift/rift_radio.c
+ 		rift/rift_radio.h
+ 		rift/rift_touch_calibration.cpp
++		rift/rift_legacy_tracker_bridge.h
++		rift/rift_legacy_tracker_bridge.c
++		rift/legacy_tracker/ohmd/ohmd_shim.c
++		rift/legacy_tracker/ohmd/omath.c
++		rift/legacy_tracker/ohmd/matrices.c
++		rift/legacy_tracker/ohmd/ukf.c
++		rift/legacy_tracker/ohmd/unscented.c
++		rift/legacy_tracker/ohmd/exponential-filter.c
++		rift/legacy_tracker/ohmd/ext_deps/nxjson.c
++		rift/legacy_tracker/ohmd/drv_oculus_rift/packet.c
++		rift/legacy_tracker/ohmd/drv_oculus_rift/rift-leds.c
++		rift/legacy_tracker/ohmd/drv_oculus_rift/rift-hmd-radio.c
++		rift/legacy_tracker/ohmd/drv_oculus_rift/rift-tracker.c
++		rift/legacy_tracker/ohmd/drv_oculus_rift/rift-kalman-6dof.c
++		rift/legacy_tracker/ohmd/drv_oculus_rift/rift-sensor.c
++		rift/legacy_tracker/ohmd/drv_oculus_rift/rift-sensor-usb.c
++		rift/legacy_tracker/ohmd/drv_oculus_rift/rift-sensor-blobwatch.c
++		rift/legacy_tracker/ohmd/drv_oculus_rift/rift-sensor-pose-helper.c
++		rift/legacy_tracker/ohmd/drv_oculus_rift/rift-sensor-pose-search.c
++		rift/legacy_tracker/ohmd/drv_oculus_rift/rift-sensor-maths.c
++		rift/legacy_tracker/ohmd/drv_oculus_rift/rift-sensor-flicker.c
++		rift/legacy_tracker/ohmd/drv_oculus_rift/correspondence_search.c
++		rift/legacy_tracker/ohmd/drv_oculus_rift/led_search.c
++		rift/legacy_tracker/ohmd/drv_oculus_rift/ohmd-video.c
++		rift/legacy_tracker/ohmd/drv_oculus_rift/ohmd-jpeg.c
++		rift/legacy_tracker/ohmd/drv_oculus_rift/sensor/uvc.c
++		rift/legacy_tracker/ohmd/drv_oculus_rift/sensor/esp770u.c
++		rift/legacy_tracker/ohmd/drv_oculus_rift/sensor/esp570.c
++		rift/legacy_tracker/ohmd/drv_oculus_rift/sensor/ar0134.c
++		rift/legacy_tracker/ohmd/drv_oculus_rift/sensor/mt9v034.c
+ 		)
+ 	target_include_directories(drv_rift SYSTEM PRIVATE)
+ 	target_link_libraries(
+@@ -334,7 +364,19 @@ if(XRT_BUILD_DRIVER_RIFT)
+ 			constellation
+ 			xrt-external-cjson
+ 			xrt-external-tinyceres
+-		)
++			Threads::Threads
++			${LIBUSB1_LIBRARIES}
++			${JPEG_LIBRARIES}
++		)
++	target_include_directories(drv_rift SYSTEM PRIVATE ${LIBUSB1_INCLUDE_DIRS} ${JPEG_INCLUDE_DIRS})
++	if(XRT_HAVE_OPENCV)
++		target_sources(drv_rift PRIVATE rift/legacy_tracker/ohmd/drv_oculus_rift/rift-sensor-opencv.cpp)
++		target_include_directories(drv_rift SYSTEM PRIVATE ${OpenCV_INCLUDE_DIRS})
++		target_link_libraries(drv_rift PRIVATE ${OpenCV_LIBRARIES})
++		target_compile_definitions(drv_rift PRIVATE HAVE_OPENCV=1)
++	else()
++		target_compile_definitions(drv_rift PRIVATE HAVE_OPENCV=0)
++	endif()
+ 	list(APPEND ENABLED_HEADSET_DRIVERS rift)
+ endif()
+ 
+diff --git a/src/xrt/drivers/rift/rift_driver.c b/src/xrt/drivers/rift/rift_driver.c
+index 3a5984e..61aee65 100644
+--- a/src/xrt/drivers/rift/rift_driver.c
++++ b/src/xrt/drivers/rift/rift_driver.c
+@@ -65,6 +65,7 @@ DEBUG_GET_ONCE_BOOL_OPTION(rift_use_firmware_distortion, "RIFT_USE_FIRMWARE_DIST
+ DEBUG_GET_ONCE_BOOL_OPTION(rift_power_override, "RIFT_POWER_OVERRIDE", false)
+ DEBUG_GET_ONCE_FLOAT_OPTION(rift_startup_wait_time, "RIFT_STARTUP_WAIT_TIME", 5.0f)
+ DEBUG_GET_ONCE_BOOL_OPTION(rift_enable_back_strap_leds, "RIFT_ENABLE_BACK_STRAP_LEDS", false)
++DEBUG_GET_ONCE_BOOL_OPTION(rift_legacy_cv1_tracker_bridge, "RIFT_LEGACY_CV1_TRACKER_BRIDGE", false)
+ 
+ //! LEDs further behind the origin than this, along the device's backward (+Z) axis, are considered part of the back
+ //! strap and disabled by @ref rift_upload_back_strap_disable_pattern.
+@@ -197,6 +198,11 @@ rift_sensor_thread_tick(struct rift_hmd *hmd)
+ 		hmd->last_tracking_count = report.tracking_count;
+ 		hmd->exposure_counter += tracking_count_delta;
+ 
++		/* Feed the legacy tracker at the IMU sample immediately after the
++		 * exposure, rather than at the end of this HID report. This matches
++		 * the full legacy backend's ordering and its timestamp domain. */
++		bool legacy_exposure_pending = remote_exposure_delta_us > 0;
++
+ 		if (remote_exposure_delta_us > 0) {
+ 			os_thread_helper_lock(&hmd->sensor_thread);
+ 			bool have_local_exposure_time = m_clock_windowed_skew_tracker_to_local(
+@@ -291,6 +297,19 @@ rift_sensor_thread_tick(struct rift_hmd *hmd)
+ 			}
+ 			os_thread_helper_unlock(&hmd->sensor_thread);
+ 
++			uint32_t sample_device_timestamp_us = report.sample_timestamp - (num_samples - 1 - i) * 1000;
++			if (hmd->legacy_tracker != NULL && legacy_exposure_pending &&
++			    (int32_t)(sample_device_timestamp_us - report.tracking_timestamp) >= 0) {
++				rift_legacy_tracker_push_exposure(hmd->legacy_tracker, sample_device_timestamp_us,
++				                                  report.tracking_count, report.tracking_timestamp,
++				                                  report.tracking_pattern);
++				legacy_exposure_pending = false;
++			}
++			if (hmd->legacy_tracker != NULL) {
++				rift_legacy_tracker_push_hmd_imu(hmd->legacy_tracker, sample_local_timestamp_ns,
++				                                 sample_device_timestamp_us, 0.001f, &gyro, &accel);
++			}
++
+ 			if (hmd->constellation_imu_sink) {
+ 				xrt_sink_push_imu(hmd->constellation_imu_sink,
+ 				                  &(struct xrt_imu_sample){
+@@ -326,6 +345,11 @@ rift_sensor_thread_tick(struct rift_hmd *hmd)
+ 			m_relation_history_push(hmd->relation_hist, &relation, sample_local_timestamp_ns);
+ 		}
+ 
++		if (hmd->legacy_tracker != NULL && legacy_exposure_pending) {
++			rift_legacy_tracker_push_exposure(hmd->legacy_tracker, report.sample_timestamp, report.tracking_count,
++			                                  report.tracking_timestamp, report.tracking_pattern);
++		}
++
+ 		break;
+ 	}
+ 	}
+@@ -523,6 +547,106 @@ read_led_model_err:
+ 
+ #undef PARSE_MICROMETER_TRIPLET
+ 
++static uint16_t
++rift_legacy_pattern_decode(uint32_t sequence)
++{
++	uint16_t pattern = 0;
++	for (uint32_t phase = 0; phase < 10; phase++) {
++		uint32_t state = (sequence >> (phase * 2)) & 0x3;
++		if (state == RIFT_CUSTOM_PATTERN_STAT_HIGH) {
++			pattern |= 1u << phase;
++		}
++	}
++	return pattern;
++}
++
++static bool
++rift_legacy_tracker_read_hmd_patterns(struct rift_hmd *hmd, struct rift_legacy_led *leds)
++{
++	for (size_t i = 0; i < hmd->led_model.led_count; i++) {
++		struct rift_custom_pattern_report pattern = {0};
++		if (rift_get_custom_pattern(hmd, &pattern) < 0 || pattern.sequence_length != 10) {
++			HMD_ERROR(hmd, "Failed to read legacy LED pattern %zu", i);
++			return false;
++		}
++
++		bool found = false;
++		for (size_t j = 0; j < hmd->led_model.led_count; j++) {
++			if (leds[j].id == pattern.led_index) {
++				leds[j].pattern = rift_legacy_pattern_decode(pattern.sequence);
++				found = true;
++				break;
++			}
++		}
++		if (!found) {
++			HMD_ERROR(hmd, "Legacy LED pattern refers to unknown LED %u", pattern.led_index);
++			return false;
++		}
++	}
++	return true;
++}
++
++static struct rift_legacy_tracker *
++rift_legacy_tracker_create_for_hmd(struct rift_hmd *hmd)
++{
++	struct rift_legacy_led *leds = U_TYPED_ARRAY_CALLOC(struct rift_legacy_led, hmd->led_model.led_count);
++	if (leds == NULL) {
++		return NULL;
++	}
++	/* rift_read_led_model converted the factory model into Monado IMU space
++	 * (-Z forward). The vendored tracker consumes the original factory device
++	 * coordinates and an original device-to-IMU offset, just as the full
++	 * legacy backend did. Undo that conversion at this narrow boundary. */
++	struct xrt_pose legacy_imu_device = {
++	    .position = {
++	        hmd->T_imu_device.position.x,
++	        -hmd->T_imu_device.position.y,
++	        hmd->T_imu_device.position.z,
++	    },
++	    .orientation = XRT_QUAT_IDENTITY,
++	};
++	for (size_t i = 0; i < hmd->led_model.led_count; i++) {
++		struct xrt_vec3 relative = {
++		    hmd->led_model.leds[i].position.x - hmd->T_imu_device.position.x,
++		    hmd->led_model.leds[i].position.y - hmd->T_imu_device.position.y,
++		    hmd->led_model.leds[i].position.z - hmd->T_imu_device.position.z,
++		};
++		leds[i].position = (struct xrt_vec3){-relative.x, relative.y, -relative.z};
++		leds[i].normal = (struct xrt_vec3){-hmd->led_model.leds[i].normal.x,
++		                                  hmd->led_model.leds[i].normal.y,
++		                                  -hmd->led_model.leds[i].normal.z};
++		leds[i].id = (uint8_t)hmd->led_model.leds[i].id;
++	}
++	if (!rift_legacy_tracker_read_hmd_patterns(hmd, leds)) {
++		free(leds);
++		return NULL;
++	}
++
++	/* Match the proven full backend: back-strap LEDs articulate with the
++	 * strap and poison the rigid HMD solve. They are behind the headset in
++	 * the legacy factory coordinate system. */
++	size_t legacy_led_count = 0;
++	for (size_t i = 0; i < hmd->led_model.led_count; i++) {
++		if (leds[i].position.z < -0.1f) {
++			continue;
++		}
++		leds[legacy_led_count++] = leds[i];
++	}
++
++	struct rift_legacy_device_model model = {
++	    .T_imu_device = legacy_imu_device,
++	    .leds = leds,
++	    .led_count = legacy_led_count,
++	    .accel_offset = hmd->imu_calibration.accel_offset,
++	    .gyro_offset = hmd->imu_calibration.gyro_offset,
++	};
++	memcpy(model.accel_matrix, &hmd->imu_calibration.accel_matrix, sizeof(model.accel_matrix));
++	memcpy(model.gyro_matrix, &hmd->imu_calibration.gyro_matrix, sizeof(model.gyro_matrix));
++	struct rift_legacy_tracker *tracker = rift_legacy_tracker_create(hmd->radio_address, &model);
++	free(leds);
++	return tracker;
++}
++
+ /*!
+  * Uploads a custom pattern that holds every LED high except the back strap LEDs, which are held off, then drops
+  * the back strap LEDs from @ref rift_hmd::led_model so the constellation tracker never tries to match blobs
+@@ -583,7 +707,10 @@ static void
+ get_raw_pose(struct rift_hmd *hmd, timepoint_ns when_ns, struct xrt_relation_chain *xrc)
+ {
+ 	struct xrt_space_relation relation = XRT_SPACE_RELATION_ZERO;
+-	if (hmd->use_constellation_poses) {
++	if (hmd->legacy_tracker != NULL) {
++		(void)rift_legacy_tracker_get_pose(hmd->legacy_tracker, XRT_DEVICE_TYPE_HMD, &relation);
++	}
++	if (relation.relation_flags == 0 && hmd->use_constellation_poses) {
+ 		struct xrt_space_relation constellation_relation = XRT_SPACE_RELATION_ZERO;
+ 		timepoint_ns constellation_when_ns;
+ 		if (m_relation_history_get_latest(hmd->raw_constellation_relation_hist, &constellation_when_ns,
+@@ -957,6 +1084,8 @@ rift_frame_node_destroy(struct xrt_frame_node *node)
+ 		t_constellation_tracker_remove_device(hmd->constellation_tracker, hmd->constellation_device_id);
+ 	}
+ 
++	rift_legacy_tracker_destroy(&hmd->legacy_tracker);
++
+ 	// Remove the variable tracking.
+ 	u_var_remove_root(hmd);
+ 
+@@ -1194,6 +1323,13 @@ rift_devices_create(struct os_hid_device *hmd_dev,
+ 		//       patterns that may have been written by other processes or prior Monado runs
+ 		hmd->tracking.flags = RIFT_TRACKING_ENABLE | RIFT_TRACKING_USE_CARRIER;
+ 		hmd->tracking.pattern_idx = 0xff;
++		/* The legacy blobwatch needs the 0..9 exposure phase to advance in
++		 * order to identify LED blink patterns. Current upstream otherwise
++		 * reports a constant phase of 255 in bridge mode. */
++		if (debug_get_bool_option_rift_legacy_cv1_tracker_bridge()) {
++			hmd->tracking.flags |= RIFT_TRACKING_AUTO_INCREMENT;
++			hmd->tracking.pattern_idx = 0;
++		}
+ 
+ 		hmd->tracking.vsync_offset = 0;
+ 		hmd->tracking.duty_cycle = 0x7f;
+@@ -1225,7 +1361,21 @@ rift_devices_create(struct os_hid_device *hmd_dev,
+ 		HMD_DEBUG(hmd, "Read LED model from Rift.");
+ 	}
+ 
+-	if (!debug_get_bool_option_rift_enable_back_strap_leds()) {
++	if (debug_get_bool_option_rift_legacy_cv1_tracker_bridge()) {
++		hmd->legacy_tracker = rift_legacy_tracker_create_for_hmd(hmd);
++		if (hmd->legacy_tracker == NULL) {
++			HMD_ERROR(hmd, "Failed to create legacy CV1 tracker, falling back to 3DoF");
++		} else {
++			HMD_INFO(hmd, "Using legacy CV1 UVC/OpenHMD tracker for poses");
++		}
++	}
++
++	/* The OpenHMD correspondence tracker needs the factory per-LED blink
++	 * patterns read above. Upstream's all-high custom pattern destroys that
++	 * identity information, so leave the factory pattern intact in bridge
++	 * mode. */
++	if (!debug_get_bool_option_rift_legacy_cv1_tracker_bridge() &&
++	    !debug_get_bool_option_rift_enable_back_strap_leds()) {
+ 		// Writes to the CustomPattern report only work with CUSTOM_PATTERN set to true
+ 		hmd->tracking.flags |= RIFT_TRACKING_CUSTOM_PATTERN | RIFT_TRACKING_AUTO_INCREMENT;
+ 		hmd->tracking.pattern_idx = 0;
+@@ -1286,7 +1436,7 @@ rift_devices_create(struct os_hid_device *hmd_dev,
+ 		hmd->base.inputs[1].name = XRT_INPUT_GENERIC_HEAD_DETECT;
+ 	}
+ 	hmd->base.supported.orientation_tracking = true;
+-	hmd->base.supported.position_tracking = false; // set to true once we are trying to get the sensor 6dof to work
++	hmd->base.supported.position_tracking = hmd->legacy_tracker != NULL;
+ 	hmd->base.supported.presence = variant == RIFT_VARIANT_CV1;
+ 
+ 	// Set up display details
+diff --git a/src/xrt/drivers/rift/rift_internal.h b/src/xrt/drivers/rift/rift_internal.h
+index 48e4d0d..0877e31 100644
+--- a/src/xrt/drivers/rift/rift_internal.h
++++ b/src/xrt/drivers/rift/rift_internal.h
+@@ -35,6 +35,7 @@
+ #include <assert.h>
+ 
+ #include "rift_interface.h"
++#include "rift_legacy_tracker_bridge.h"
+ 
+ 
+ #define HMD_TRACE(hmd, ...) U_LOG_XDEV_IFL_T(&hmd->base, hmd->log_level, __VA_ARGS__)
+@@ -764,6 +765,7 @@ struct rift_touch_controller
+ 		struct m_clock_windowed_skew_tracker *clock_tracker;
+ 
+ 		bool calibration_read;
++		bool legacy_tracker_registered;
+ 		struct rift_touch_controller_calibration calibration;
+ 
+ 		struct
+@@ -962,6 +964,10 @@ struct rift_hmd
+ 	int added_devices;
+ 	struct xrt_device *devices[4]; // left touch, right touch, tracked object, remote
+ 
++	/* Optional legacy UVC/OpenHMD constellation tracker. It only supplies poses;
++	 * all HID, radio, display and compositor handling remains upstream. */
++	struct rift_legacy_tracker *legacy_tracker;
++
+ 	struct t_constellation_tracker *constellation_tracker;
+ 	struct t_constellation_tracker_device constellation_device;
+ 	struct t_constellation_tracker_tracking_source constellation_tracking_source;
+diff --git a/src/xrt/drivers/rift/rift_legacy_tracker_bridge.c b/src/xrt/drivers/rift/rift_legacy_tracker_bridge.c
+new file mode 100644
+index 0000000..fcaf49c
+--- /dev/null
++++ b/src/xrt/drivers/rift/rift_legacy_tracker_bridge.c
+@@ -0,0 +1,261 @@
++// Copyright 2026
++// SPDX-License-Identifier: BSL-1.0
++/*! @file @brief Isolated current-Monado to OpenHMD CV1 tracker adapter. */
++
++#include "rift_legacy_tracker_bridge.h"
++
++#include "util/u_debug.h"
++#include "util/u_logging.h"
++#include "util/u_misc.h"
++
++/* Keep the old names and vector types contained in this translation unit. */
++#include "legacy_tracker/ohmd/drv_oculus_rift/rift-tracker.h"
++
++/* Required by the vendored OpenHMD compatibility shim. */
++enum u_logging_level rift_log_level = U_LOGGING_WARN;
++DEBUG_GET_ONCE_FLOAT_OPTION(rift_eye_height, "RIFT_EYE_HEIGHT", 1.6f)
++
++struct rift_legacy_tracker
++{
++	rift_tracker_ctx *ctx;
++	rift_tracked_device *hmd;
++	rift_tracked_device *left;
++	rift_tracked_device *right;
++
++	/* rift_tracker_add_device borrows this data: do not put it on the stack. */
++	rift_leds hmd_leds;
++	rift_leds left_leds;
++	rift_leds right_leds;
++
++	/* Transition-only diagnostics: never emit a per-frame pose log. */
++	bool hmd_was_locked;
++	bool left_was_locked;
++	bool right_was_locked;
++};
++
++static vec3f
++legacy_vec3(const struct xrt_vec3 *v)
++{
++	return (vec3f){{v->x, v->y, v->z}};
++}
++
++static void
++legacy_pose(const struct xrt_pose *pose, posef *out)
++{
++	vec3f position = legacy_vec3(&pose->position);
++	quatf orientation = {{pose->orientation.x, pose->orientation.y, pose->orientation.z, pose->orientation.w}};
++	oposef_init(out, &position, &orientation);
++}
++
++static rift_tracked_device *
++add_device(struct rift_legacy_tracker *tracker,
++           int id,
++           const struct rift_legacy_device_model *model,
++           bool is_hmd,
++           rift_leds *leds)
++{
++	*leds = (rift_leds){0};
++	leds->num_points = (uint8_t)model->led_count;
++	leds->radius_mm = 3.5f;
++	leds->points = U_TYPED_ARRAY_CALLOC(rift_led, leds->num_points);
++	if (leds->points == NULL) {
++		return NULL;
++	}
++
++	for (size_t i = 0; i < model->led_count; i++) {
++		leds->points[i].id = model->leds[i].id;
++		leds->points[i].pos = legacy_vec3(&model->leds[i].position);
++		leds->points[i].dir = legacy_vec3(&model->leds[i].normal);
++		leds->points[i].pattern = model->leds[i].pattern;
++	}
++
++	posef imu_pose;
++	legacy_pose(&model->T_imu_device, &imu_pose);
++	posef model_pose;
++	vec3f zero = {{0.0f, 0.0f, 0.0f}};
++	quatf orientation = is_hmd ? (quatf){{0.0f, 1.0f, 0.0f, 0.0f}} : (quatf){{0.0f, 0.0f, 0.0f, 1.0f}};
++	oposef_init(&model_pose, &zero, &orientation);
++
++	rift_tracked_device_imu_calibration calibration = {0};
++	calibration.accel_offset = legacy_vec3(&model->accel_offset);
++	calibration.gyro_offset = legacy_vec3(&model->gyro_offset);
++	memcpy(calibration.accel_matrix, model->accel_matrix, sizeof(calibration.accel_matrix));
++	memcpy(calibration.gyro_matrix, model->gyro_matrix, sizeof(calibration.gyro_matrix));
++
++	/* The tracker borrows the persistent model and frees it at teardown. */
++	return rift_tracker_add_device(tracker->ctx, id, &imu_pose, &model_pose, leds, &calibration);
++}
++
++struct rift_legacy_tracker *
++rift_legacy_tracker_create(const uint8_t radio_address[5], const struct rift_legacy_device_model *hmd_model)
++{
++	struct rift_legacy_tracker *tracker = U_TYPED_CALLOC(struct rift_legacy_tracker);
++	if (tracker == NULL) {
++		return NULL;
++	}
++
++	tracker->ctx = rift_tracker_new(NULL, radio_address);
++	if (tracker->ctx == NULL) {
++		free(tracker);
++		return NULL;
++	}
++
++	tracker->hmd = add_device(tracker, 0, hmd_model, true, &tracker->hmd_leds);
++	if (tracker->hmd != NULL) {
++		U_LOG_IFL_W(rift_log_level, "Legacy tracker registered HMD: id=0 leds=%zu", hmd_model->led_count);
++	}
++	if (tracker->hmd == NULL) {
++		rift_tracker_free(tracker->ctx);
++		free(tracker);
++		return NULL;
++	}
++
++	return tracker;
++}
++
++void
++rift_legacy_tracker_destroy(struct rift_legacy_tracker **tracker_ptr)
++{
++	if (tracker_ptr == NULL || *tracker_ptr == NULL) {
++		return;
++	}
++	struct rift_legacy_tracker *tracker = *tracker_ptr;
++	rift_tracker_free(tracker->ctx);
++	free(tracker->hmd_leds.points);
++	free(tracker->left_leds.points);
++	free(tracker->right_leds.points);
++	free(tracker);
++	*tracker_ptr = NULL;
++}
++
++bool
++rift_legacy_tracker_add_touch(struct rift_legacy_tracker *tracker,
++                              enum xrt_device_type device_type,
++                              const struct rift_legacy_device_model *model)
++{
++	if (tracker == NULL) {
++		return false;
++	}
++	rift_tracked_device **device = device_type == XRT_DEVICE_TYPE_LEFT_HAND_CONTROLLER ? &tracker->left : &tracker->right;
++	if (*device != NULL) {
++		return true;
++	}
++	rift_leds *leds = device_type == XRT_DEVICE_TYPE_LEFT_HAND_CONTROLLER ? &tracker->left_leds : &tracker->right_leds;
++	int id = device_type == XRT_DEVICE_TYPE_LEFT_HAND_CONTROLLER ? 2 : 1;
++	*device = add_device(tracker, id, model, false, leds);
++	if (*device != NULL) {
++		U_LOG_IFL_W(rift_log_level, "Legacy tracker registered %s Touch: id=%d leds=%zu IMU=(%.4f, %.4f, %.4f)",
++		             device_type == XRT_DEVICE_TYPE_LEFT_HAND_CONTROLLER ? "left" : "right", id,
++		             model->led_count, model->T_imu_device.position.x, model->T_imu_device.position.y,
++		             model->T_imu_device.position.z);
++	}
++	return *device != NULL;
++}
++
++static void
++push_imu(rift_tracked_device *device,
++         int64_t local_timestamp_ns,
++         uint32_t device_timestamp_us,
++         float dt_s,
++         const struct xrt_vec3 *gyro_rad_s,
++         const struct xrt_vec3 *accel_m_s2)
++{
++	if (device == NULL) {
++		return;
++	}
++	vec3f gyro = legacy_vec3(gyro_rad_s);
++	vec3f accel = legacy_vec3(accel_m_s2);
++	vec3f mag = {{0.0f, 0.0f, 0.0f}};
++	rift_tracked_device_imu_update(device, (uint64_t)local_timestamp_ns, device_timestamp_us, dt_s, &gyro, &accel, &mag);
++}
++
++void
++rift_legacy_tracker_push_hmd_imu(struct rift_legacy_tracker *tracker, int64_t local_timestamp_ns,
++                                 uint32_t device_timestamp_us, float dt_s, const struct xrt_vec3 *gyro_rad_s,
++                                 const struct xrt_vec3 *accel_m_s2)
++{
++	if (tracker != NULL) {
++		push_imu(tracker->hmd, local_timestamp_ns, device_timestamp_us, dt_s, gyro_rad_s, accel_m_s2);
++	}
++}
++
++void
++rift_legacy_tracker_push_touch_imu(struct rift_legacy_tracker *tracker, enum xrt_device_type device_type,
++                                   int64_t local_timestamp_ns, uint32_t device_timestamp_us, float dt_s,
++                                   const struct xrt_vec3 *gyro_rad_s, const struct xrt_vec3 *accel_m_s2)
++{
++	if (tracker != NULL) {
++		push_imu(device_type == XRT_DEVICE_TYPE_LEFT_HAND_CONTROLLER ? tracker->left : tracker->right,
++		         local_timestamp_ns, device_timestamp_us, dt_s, gyro_rad_s, accel_m_s2);
++	}
++}
++
++void
++rift_legacy_tracker_push_exposure(struct rift_legacy_tracker *tracker, uint32_t hmd_timestamp_us,
++                                  uint16_t exposure_count, uint32_t exposure_timestamp_us, uint8_t pattern_phase)
++{
++	if (tracker != NULL) {
++		rift_tracker_on_new_exposure(tracker->ctx, hmd_timestamp_us, exposure_count, exposure_timestamp_us, pattern_phase);
++	}
++}
++
++bool
++rift_legacy_tracker_get_pose(struct rift_legacy_tracker *tracker,
++                             enum xrt_device_type device_type,
++                             struct xrt_space_relation *out_relation)
++{
++	if (tracker == NULL) {
++		return false;
++	}
++	rift_tracked_device *device = tracker->hmd;
++	if (device_type == XRT_DEVICE_TYPE_LEFT_HAND_CONTROLLER) {
++		device = tracker->left;
++	} else if (device_type == XRT_DEVICE_TYPE_RIGHT_HAND_CONTROLLER) {
++		device = tracker->right;
++	}
++	bool *was_locked = &tracker->hmd_was_locked;
++	const char *name = "HMD";
++	if (device_type == XRT_DEVICE_TYPE_LEFT_HAND_CONTROLLER) {
++		was_locked = &tracker->left_was_locked;
++		name = "left Touch";
++	} else if (device_type == XRT_DEVICE_TYPE_RIGHT_HAND_CONTROLLER) {
++		was_locked = &tracker->right_was_locked;
++		name = "right Touch";
++	}
++	bool locked = device != NULL && rift_tracked_device_has_position_lock(device);
++	bool acquired = locked && !*was_locked;
++	if (locked != *was_locked) {
++		U_LOG_IFL_W(rift_log_level, "Legacy tracker %s camera lock %s", name, locked ? "acquired" : "lost");
++		*was_locked = locked;
++	}
++	if (!locked) {
++		return false;
++	}
++
++	posef pose = {0};
++	vec3f velocity = {0};
++	vec3f angular_velocity = {0};
++	rift_tracked_device_get_view_pose(device, &pose, &velocity, NULL, &angular_velocity);
++	if (acquired) {
++		U_LOG_IFL_W(rift_log_level, "Legacy tracker %s raw pose: p=(%.3f, %.3f, %.3f) q=(%.3f, %.3f, %.3f, %.3f)",
++		             name, pose.pos.x, pose.pos.y, pose.pos.z, pose.orient.x, pose.orient.y, pose.orient.z,
++		             pose.orient.w);
++	}
++
++	/* The vendored tracker starts in a +Z-forward world at its acquisition
++	 * height. Convert once here to Monado/OpenXR (-Z forward) and put the
++	 * initial HMD height at RIFT_EYE_HEIGHT, exactly as the full fork did. */
++	float eye_height = debug_get_float_option_rift_eye_height();
++	struct xrt_quat orientation = {pose.orient.z, pose.orient.w, -pose.orient.x, -pose.orient.y};
++	*out_relation = (struct xrt_space_relation){
++	    .pose = {.position = {-pose.pos.x, pose.pos.y + eye_height, -pose.pos.z},
++	             .orientation = orientation},
++	    .linear_velocity = {-velocity.x, velocity.y, -velocity.z},
++	    .angular_velocity = {angular_velocity.x, angular_velocity.y, angular_velocity.z},
++	    .relation_flags = XRT_SPACE_RELATION_ORIENTATION_VALID_BIT | XRT_SPACE_RELATION_ORIENTATION_TRACKED_BIT |
++	                      XRT_SPACE_RELATION_POSITION_VALID_BIT | XRT_SPACE_RELATION_POSITION_TRACKED_BIT |
++	                      XRT_SPACE_RELATION_LINEAR_VELOCITY_VALID_BIT |
++	                      XRT_SPACE_RELATION_ANGULAR_VELOCITY_VALID_BIT,
++	};
++	return true;
++}
+diff --git a/src/xrt/drivers/rift/rift_legacy_tracker_bridge.h b/src/xrt/drivers/rift/rift_legacy_tracker_bridge.h
+new file mode 100644
+index 0000000..df5c1d9
+--- /dev/null
++++ b/src/xrt/drivers/rift/rift_legacy_tracker_bridge.h
+@@ -0,0 +1,79 @@
++// Copyright 2026
++// SPDX-License-Identifier: BSL-1.0
++/*! @file @brief Narrow adapter for the vendored CV1 OpenHMD tracker. */
++#pragma once
++
++#include <stdbool.h>
++#include <stdint.h>
++
++#include "xrt/xrt_defines.h"
++#include "xrt/xrt_space.h"
++
++#ifdef __cplusplus
++extern "C" {
++#endif
++
++struct rift_legacy_tracker;
++
++struct rift_legacy_led
++{
++	struct xrt_vec3 position;
++	struct xrt_vec3 normal;
++	uint8_t id;
++	uint16_t pattern;
++};
++
++struct rift_legacy_device_model
++{
++	struct xrt_pose T_imu_device;
++	const struct rift_legacy_led *leds;
++	size_t led_count;
++	struct xrt_vec3 accel_offset;
++	struct xrt_vec3 gyro_offset;
++	float accel_matrix[3][3];
++	float gyro_matrix[3][3];
++};
++
++struct rift_legacy_tracker *
++rift_legacy_tracker_create(const uint8_t radio_address[5], const struct rift_legacy_device_model *hmd_model);
++
++void
++rift_legacy_tracker_destroy(struct rift_legacy_tracker **tracker_ptr);
++
++bool
++rift_legacy_tracker_add_touch(struct rift_legacy_tracker *tracker,
++                              enum xrt_device_type device_type,
++                              const struct rift_legacy_device_model *model);
++
++void
++rift_legacy_tracker_push_hmd_imu(struct rift_legacy_tracker *tracker,
++                                 int64_t local_timestamp_ns,
++                                 uint32_t device_timestamp_us,
++                                 float dt_s,
++                                 const struct xrt_vec3 *gyro_rad_s,
++                                 const struct xrt_vec3 *accel_m_s2);
++
++void
++rift_legacy_tracker_push_touch_imu(struct rift_legacy_tracker *tracker,
++                                   enum xrt_device_type device_type,
++                                   int64_t local_timestamp_ns,
++                                   uint32_t device_timestamp_us,
++                                   float dt_s,
++                                   const struct xrt_vec3 *gyro_rad_s,
++                                   const struct xrt_vec3 *accel_m_s2);
++
++void
++rift_legacy_tracker_push_exposure(struct rift_legacy_tracker *tracker,
++                                  uint32_t hmd_timestamp_us,
++                                  uint16_t exposure_count,
++                                  uint32_t exposure_timestamp_us,
++                                  uint8_t pattern_phase);
++
++bool
++rift_legacy_tracker_get_pose(struct rift_legacy_tracker *tracker,
++                             enum xrt_device_type device_type,
++                             struct xrt_space_relation *out_relation);
++
++#ifdef __cplusplus
++}
++#endif
+diff --git a/src/xrt/drivers/rift/rift_radio.c b/src/xrt/drivers/rift/rift_radio.c
+index 2894880..56f2aad 100644
+--- a/src/xrt/drivers/rift/rift_radio.c
++++ b/src/xrt/drivers/rift/rift_radio.c
+@@ -44,8 +44,13 @@ rift_touch_controller_get_tracked_pose(struct xrt_device *xdev,
+ 	case XRT_INPUT_TOUCH_GRIP_POSE:
+ 	case XRT_INPUT_TOUCH_AIM_POSE: {
+ 		struct xrt_space_relation relation = XRT_SPACE_RELATION_ZERO;
++		if (controller->hmd->legacy_tracker != NULL) {
++			(void)rift_legacy_tracker_get_pose(controller->hmd->legacy_tracker, controller->base.device_type,
++			                                   &relation);
++		}
+ 
+-		if (imu_fusion_get_prediction(controller->input.imu_fusion, (uint64_t)at_timestamp_ns,
++		if (relation.relation_flags == 0 &&
++		    imu_fusion_get_prediction(controller->input.imu_fusion, (uint64_t)at_timestamp_ns,
+ 		                              &relation.pose.orientation, &relation.angular_velocity) == 0) {
+ 			relation.relation_flags = XRT_SPACE_RELATION_ORIENTATION_VALID_BIT |
+ 			                          XRT_SPACE_RELATION_ORIENTATION_TRACKED_BIT |
+@@ -789,6 +794,41 @@ rift_radio_read_controller_calibration(struct rift_hmd *hmd, struct rift_touch_c
+ 	return true;
+ }
+ 
++static bool
++rift_touch_controller_register_legacy_tracker(struct rift_touch_controller *controller)
++{
++	if (controller->input.legacy_tracker_registered || controller->hmd->legacy_tracker == NULL ||
++	    !controller->input.calibration_read) {
++		return controller->input.legacy_tracker_registered;
++	}
++
++	struct rift_touch_controller_calibration *c = &controller->input.calibration;
++	struct rift_legacy_led *leds = U_TYPED_ARRAY_CALLOC(struct rift_legacy_led, c->num_leds);
++	if (leds == NULL) {
++		return false;
++	}
++	for (size_t i = 0; i < c->num_leds; i++) {
++		leds[i].position = c->leds[i].position;
++		leds[i].normal = c->leds[i].normal;
++		leds[i].id = (uint8_t)i;
++		/* Touch LEDs are all-on for every HMD exposure phase. */
++		leds[i].pattern = 0xff;
++	}
++	struct rift_legacy_device_model model = {
++	    .T_imu_device = {.position = c->imu_position, .orientation = XRT_QUAT_IDENTITY},
++	    .leds = leds,
++	    .led_count = c->num_leds,
++	    .accel_offset = c->accel_offset,
++	    .gyro_offset = c->gyro_offset,
++	};
++	memcpy(model.accel_matrix, c->accel_calibration, sizeof(model.accel_matrix));
++	memcpy(model.gyro_matrix, c->gyro_calibration, sizeof(model.gyro_matrix));
++	controller->input.legacy_tracker_registered =
++	    rift_legacy_tracker_add_touch(controller->hmd->legacy_tracker, controller->base.device_type, &model);
++	free(leds);
++	return controller->input.legacy_tracker_registered;
++}
++
+ static void
+ rift_touch_controller_handle_radio_input_report(struct rift_hmd *hmd,
+                                                 struct rift_touch_controller *controller,
+@@ -846,8 +886,16 @@ rift_touch_controller_handle_radio_input_report(struct rift_hmd *hmd,
+ 	math_matrix_3x3_transform_vec3((struct xrt_matrix_3x3 *)&c->accel_calibration, &raw_accel, &accel);
+ 	math_vec3_accum(&c->accel_offset, &accel);
+ 
+-	controller->input.device_remote_ns +=
+-	    (timepoint_ns)(message.touch.timestamp - controller->input.last_device_remote_us) * U_TIME_1US_IN_NS;
++	/* A Touch timestamp is a free-running 32-bit counter. On its first
++	 * radio report last_device_remote_us is zero, not the previous sample.
++	 * Passing that enormous apparent interval into the legacy UKF prevents
++	 * it from acquiring a positional lock. Match the full legacy driver's
++	 * initial 500 Hz interval instead. */
++	uint32_t device_dt_us = controller->input.last_device_remote_us == 0
++	                            ? 2000
++	                            : message.touch.timestamp - controller->input.last_device_remote_us;
++	uint32_t sample_device_timestamp_us = message.touch.timestamp - device_dt_us;
++	controller->input.device_remote_ns += (timepoint_ns)device_dt_us * U_TIME_1US_IN_NS;
+ 	controller->input.last_device_remote_us = message.touch.timestamp;
+ 
+ 	os_mutex_lock(&controller->input.mutex);
+@@ -899,6 +947,14 @@ rift_touch_controller_handle_radio_input_report(struct rift_hmd *hmd,
+ 	};
+ 	controller->input.last_imu_sample = imu_sample;
+ 
++	(void)rift_touch_controller_register_legacy_tracker(controller);
++	if (controller->input.legacy_tracker_registered) {
++		rift_legacy_tracker_push_touch_imu(hmd->legacy_tracker, controller->base.device_type,
++		                                   imu_sample.timestamp_ns, sample_device_timestamp_us,
++		                                   (float)device_dt_us / 1000000.0f, &gyro,
++		                                   &accel);
++	}
++
+ 	struct xrt_vec3 accel_variance = {0.01, 0.01, 0.01};
+ 	struct xrt_vec3 gyro_variance = {0.01, 0.01, 0.01};
+ 	imu_fusion_incorporate_gyros_and_accelerometer(controller->input.imu_fusion, imu_sample.timestamp_ns, &gyro,
+diff --git a/src/xrt/drivers/rift/rift_usb.c b/src/xrt/drivers/rift/rift_usb.c
+index d9082b2..af080b0 100644
+--- a/src/xrt/drivers/rift/rift_usb.c
++++ b/src/xrt/drivers/rift/rift_usb.c
+@@ -155,6 +155,18 @@ rift_set_custom_pattern(struct rift_hmd *hmd, struct rift_custom_pattern_report
+ 	return rift_send_report(hmd, false, FEATURE_REPORT_CUSTOM_PATTERN, pattern, sizeof(*pattern));
+ }
+ 
++int
++rift_get_custom_pattern(struct rift_hmd *hmd, struct rift_custom_pattern_report *pattern)
++{
++	uint8_t buf[REPORT_MAX_SIZE] = {0};
++	int result = rift_get_report(hmd, false, FEATURE_REPORT_CUSTOM_PATTERN, buf, sizeof(buf));
++	if (result < 0) {
++		return result;
++	}
++	memcpy(pattern, buf + 1, sizeof(*pattern));
++	return 0;
++}
++
+ int
+ rift_get_tracking_report(struct rift_hmd *hmd, struct rift_tracking_report *tracking_report)
+ {
+diff --git a/src/xrt/drivers/rift/rift_usb.h b/src/xrt/drivers/rift/rift_usb.h
+index e99c364..bd3e9ec 100644
+--- a/src/xrt/drivers/rift/rift_usb.h
++++ b/src/xrt/drivers/rift/rift_usb.h
+@@ -37,6 +37,9 @@ rift_set_tracking(struct rift_hmd *hmd, struct rift_tracking_report *tracking);
+ int
+ rift_set_custom_pattern(struct rift_hmd *hmd, struct rift_custom_pattern_report *pattern);
+ 
++int
++rift_get_custom_pattern(struct rift_hmd *hmd, struct rift_custom_pattern_report *pattern);
++
+ int
+ rift_get_display_info(struct rift_hmd *hmd, struct rift_display_info_report *display_info);
+ 
+--- a/src/xrt/drivers/rift/legacy_tracker/ohmd/drv_oculus_rift/rift-sensor.c
++++ b/src/xrt/drivers/rift/legacy_tracker/ohmd/drv_oculus_rift/rift-sensor.c
+@@ -75,6 +75,9 @@
+ 	/* Queue of frames being returned to the capture thread */
+ 	rift_sensor_frame_queue capture_frame_q;
+ 	int dropped_frames;
++
++	/* One-Hz bridge diagnostics: deliberately not per-frame logging. */
++	uint64_t last_bridge_diag_ts;
+ 	/* queue of frames awaiting fast analysis */
+ 	rift_sensor_frame_queue fast_analysis_q;
+ 	/* cond that's signalled when a frame is put in the fast queue */
+@@ -267,6 +270,24 @@
+ 
+ 	frame->blob_extract_finish_ts = ohmd_monotonic_get(sensor->ohmd_ctx);
+ 
++	if (now - sensor->last_bridge_diag_ts >= 1000000000ULL) {
++		int labels[3] = {0};
++		if (frame->bwobs) {
++			for (int i = 0; i < frame->bwobs->num_blobs; i++) {
++				int id = LED_OBJECT_ID(frame->bwobs->blobs[i].led_id);
++				if (id >= 0 && id < 3) {
++					labels[id]++;
++				}
++			}
++		}
++		LOGW("Bridge sensor %d: exposure=%s phase=%u blobs=%d labels[hmd=%d right=%d left=%d] devices=%u camera_pose=%s",
++		     sensor->id, frame->exposure_info_valid ? "matched" : "unmatched",
++		     frame->exposure_info.led_pattern_phase, frame->bwobs ? frame->bwobs->num_blobs : 0,
++		     labels[0], labels[1], labels[2], frame->n_devices,
++		     sensor->pf.have_camera_pose ? "yes" : "no");
++		sensor->last_bridge_diag_ts = now;
++	}
++
+ 	if (frame->bwobs && frame->bwobs->num_blobs > 0) {
+ 		rift_pose_finder_process_blobs_fast(&sensor->pf, frame, sensor->devices);
+ #if 0

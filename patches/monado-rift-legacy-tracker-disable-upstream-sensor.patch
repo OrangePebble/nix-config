@@ -1,0 +1,23 @@
+diff --git a/src/xrt/targets/common/target_builder_rift.c b/src/xrt/targets/common/target_builder_rift.c
+index 3a5984e..e108ee2 100644
+--- a/src/xrt/targets/common/target_builder_rift.c
++++ b/src/xrt/targets/common/target_builder_rift.c
+@@ -97,4 +97,5 @@ DEBUG_GET_ONCE_LOG_OPTION(rift_log, "RIFT_LOG", U_LOGGING_WARN)
+ DEBUG_GET_ONCE_BOOL_OPTION(rift_prober_enable, "RIFT_PROBER_ENABLE", DEFAULT_ENABLE)
+ DEBUG_GET_ONCE_BOOL_OPTION(rift_prober_constellation_tracking, "RIFT_PROBER_CONSTELLATION_TRACKING", false)
++DEBUG_GET_ONCE_BOOL_OPTION(rift_legacy_cv1_tracker_bridge, "RIFT_LEGACY_CV1_TRACKER_BRIDGE", false)
+ 
+ #undef DEFAULT_ENABLE
+@@ -470,5 +471,12 @@ rift_open_system_impl(struct xrt_builder *xb,
+ 		goto fail;
+ 	}
+ 
++	/* The legacy bridge opens and owns CV1 UVC interfaces itself. Merely
++	 * creating the upstream sensor context claims those same interfaces,
++	 * even when native constellation tracking is disabled. */
++	if (debug_get_bool_option_rift_legacy_cv1_tracker_bridge()) {
++		return XRT_SUCCESS;
++	}
++
+ #ifdef XRT_BUILD_DRIVER_RIFT_SENSOR
+ 	ret = rift_sensor_context_create(&rb->sensor_context, xfctx);

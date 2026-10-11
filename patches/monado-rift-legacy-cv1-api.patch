@@ -1,0 +1,165 @@
+--- a/src/xrt/drivers/rift/legacy_cv1/rift/rift_hmd.c
++++ b/src/xrt/drivers/rift/legacy_cv1/rift/rift_hmd.c
+@@ -61,7 +61,7 @@
+  *
+  */
+ 
+-static bool
++static xrt_result_t
+ rift_hmd_compute_distortion(struct xrt_device *xdev, uint32_t view, float u, float v, struct xrt_uv_triplet *result)
+ {
+ 	struct rift_hmd *hmd = rift_hmd(xdev);
+@@ -96,7 +96,7 @@
+ 	result->r = r_uv;
+ 	result->g = g_uv;
+ 	result->b = b_uv;
+-	return true;
++	return XRT_SUCCESS;
+ }
+ 
+ /*
+@@ -105,16 +105,17 @@
+  *
+  */
+ 
+-static void
++static xrt_result_t
+ rift_hmd_update_inputs(struct xrt_device *xdev)
+ {
+ 	(void)xdev;
++	return XRT_SUCCESS;
+ }
+ 
+-static void
++static xrt_result_t
+ rift_hmd_get_tracked_pose(struct xrt_device *xdev,
+                           enum xrt_input_name name,
+-                          uint64_t at_timestamp_ns,
++                          int64_t at_timestamp_ns,
+                           struct xrt_space_relation *out_relation)
+ {
+ 	struct rift_hmd *hmd = rift_hmd(xdev);
+@@ -122,7 +123,7 @@
+ 	if (name != XRT_INPUT_GENERIC_HEAD_POSE) {
+ 		RIFT_ERROR("Unknown input name requested");
+ 		U_ZERO(out_relation);
+-		return;
++		return XRT_ERROR_INPUT_UNSUPPORTED;
+ 	}
+ 
+ 	struct xrt_space_relation relation;
+@@ -143,6 +144,7 @@
+ 	hmd->last_pose = relation.pose;
+ 
+ 	*out_relation = relation;
++	return XRT_SUCCESS;
+ }
+ 
+ static void
+@@ -374,8 +376,11 @@
+ 
+ 	hmd->base.inputs[0].name = XRT_INPUT_GENERIC_HEAD_POSE;
+ 
+-	hmd->base.orientation_tracking_supported = true;
+-	hmd->base.position_tracking_supported = true;
++	/* These properties are queried by OpenXR at system creation, before
++	 * the tracker obtains camera lock. The CV1 always has IMU orientation
++	 * tracking and this backend supplies camera position tracking. */
++	hmd->base.supported.orientation_tracking = true;
++	hmd->base.supported.position_tracking = true;
+ 
+ 	if (sys->variant == RIFT_VARIANT_CV1) {
+ 		snprintf(hmd->base.str, XRT_DEVICE_NAME_LEN, "Oculus Rift CV1");
+--- a/src/xrt/drivers/rift/legacy_cv1/rift/rift_touch.c
++++ b/src/xrt/drivers/rift/legacy_cv1/rift/rift_touch.c
+@@ -379,15 +379,15 @@
+ 	}
+ }
+ 
+-static void
+-rift_touch_set_output(struct xrt_device *xdev, enum xrt_output_name name, const union xrt_output_value *value)
++static xrt_result_t
++rift_touch_set_output(struct xrt_device *xdev, enum xrt_output_name name, const struct xrt_output_value *value)
+ {
+ 	struct rift_touch *touch = rift_touch(xdev);
+ 	struct rift_system *sys = touch->sys;
+ 
+ 	if (name != XRT_OUTPUT_NAME_TOUCH_HAPTIC) {
+ 		RIFT_ERROR("Unknown output name requested");
+-		return;
++		return XRT_ERROR_INPUT_UNSUPPORTED;
+ 	}
+ 
+ 	float frequency = value->vibration.frequency;
+@@ -418,6 +418,7 @@
+ 	}
+ 
+ 	os_mutex_unlock(&sys->dev_mutex);
++	return XRT_SUCCESS;
+ }
+ 
+ /*
+@@ -440,7 +441,7 @@
+ 	touch->base.inputs[index].value.vec1.x = value;
+ }
+ 
+-static void
++static xrt_result_t
+ rift_touch_update_inputs(struct xrt_device *xdev)
+ {
+ 	struct rift_touch *touch = rift_touch(xdev);
+@@ -489,12 +490,13 @@
+ 	touch->base.inputs[OCULUS_TOUCH_THUMBSTICK].value.vec2.y = touch->stick[1];
+ 
+ 	os_mutex_unlock(&sys->dev_mutex);
++	return XRT_SUCCESS;
+ }
+ 
+-static void
++static xrt_result_t
+ rift_touch_get_tracked_pose(struct xrt_device *xdev,
+                             enum xrt_input_name name,
+-                            uint64_t at_timestamp_ns,
++                            int64_t at_timestamp_ns,
+                             struct xrt_space_relation *out_relation)
+ {
+ 	struct rift_touch *touch = rift_touch(xdev);
+@@ -502,7 +504,7 @@
+ 	if (name != XRT_INPUT_TOUCH_AIM_POSE && name != XRT_INPUT_TOUCH_GRIP_POSE) {
+ 		RIFT_ERROR("Unknown pose name requested");
+ 		U_ZERO(out_relation);
+-		return;
++		return XRT_ERROR_INPUT_UNSUPPORTED;
+ 	}
+ 
+ 	struct xrt_relation_chain xrc = {0};
+@@ -534,6 +536,7 @@
+ 	*rel = relation;
+ 
+ 	m_relation_chain_resolve(&xrc, out_relation);
++	return XRT_SUCCESS;
+ }
+ 
+ static void
+@@ -594,8 +597,6 @@
+ 	touch->base.device_type = device_type;
+ 	touch->base.tracking_origin = &sys->base;
+ 
+-	touch->base.orientation_tracking_supported = true;
+-	touch->base.position_tracking_supported = true;
+ 
+ 	if (device_type == XRT_DEVICE_TYPE_LEFT_HAND_CONTROLLER) {
+ 		touch->device_num = RIFT_TOUCH_CONTROLLER_LEFT;
+--- a/src/xrt/drivers/rift/legacy_cv1/rift/rift_system.c
++++ b/src/xrt/drivers/rift/legacy_cv1/rift/rift_system.c
+@@ -723,7 +723,9 @@
+ 
+ 	sys->base.type = XRT_TRACKING_TYPE_LIGHTHOUSE; // Outside-in IR constellation tracking
+ 	snprintf(sys->base.name, XRT_TRACKING_NAME_LEN, "%s", "Oculus Rift CV1 Constellation Tracking");
+-	sys->base.offset.orientation.w = 1.0f;
++	/* Current Monado composes this origin into reference spaces. A zero
++	 * quaternion is invalid and makes xrLocateViews fail before rendering. */
++	sys->base.initial_offset.orientation.w = 1.0f;
+ 
+ 	/* Tracker world -> reported world: starts as a 180° Y rotation (see
+ 	 * rift_system_push_device_pose), replaced on recenter. The initial y
