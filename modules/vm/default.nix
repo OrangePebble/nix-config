@@ -81,15 +81,6 @@ let
       exit 0
     fi
 
-    if [ "$#" -ne 0 ]; then
-      # VFIO teardown of 10:00.0 can crash the running kernel while libvirt
-      # returns it to xhci_hcd. A reboot avoids trying to recover that device
-      # in-place. Delay the reboot so the libvirt release hook can finish.
-      ${pkgs.systemd}/bin/systemd-run --unit=${vmName}-reboot-after-exit --on-active=5s --no-block \
-        ${pkgs.systemd}/bin/systemctl reboot
-      exit 0
-    fi
-
     ${pkgs.systemd}/bin/systemctl start display-manager.service
 
     # The user manager survives the handoff, so DMS remains explicitly stopped

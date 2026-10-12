@@ -31,10 +31,10 @@ NixOS uses Radeon outputs `DP-1` and `DP-2` while Windows is off. Starting
 Radeon DRM users. It waits for the DRM nodes to be clear, then libvirt assigns
 the Radeon to Windows. Windows uses those same physical Radeon outputs.
 
-When Windows shuts down, libvirt reattaches the Radeon to `amdgpu` and the
-`release:end` hook schedules a host reboot. Rebooting avoids in-place VFIO
-teardown/rebind failures; because the graphical session was already logged out,
-this adds only the normal reboot delay before Linux is available again.
+When Windows shuts down, libvirt reattaches the Radeon to `amdgpu`. Its QEMU
+`release:end` hook starts the display manager, waits for niri's Wayland socket,
+and starts DMS again. The user session is intentionally replaced; GPU-using
+applications such as Discord may be killed during the handoff.
 
 This avoids the original unsafe approach, which tried to detach the active GPU
 while niri/Mesa still held it open and caused host resets.
@@ -65,12 +65,12 @@ sudo systemctl start win11-start
 ```
 
 Shut Windows down normally. Do not force it off unless recovery requires it.
-The host should reboot automatically after Windows exits. If it does not,
-inspect the hook and reboot transaction:
+The display manager should return automatically. If niri returns with only a
+gray background, start DMS manually:
 
 ```sh
-sudo journalctl -b -u win11-reboot-after-exit.service --no-pager
-sudo systemctl reboot
+systemctl --user reset-failed dms.service
+systemctl --user start dms.service
 ```
 
 ## USB policy

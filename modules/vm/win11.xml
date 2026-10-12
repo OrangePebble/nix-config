@@ -126,30 +126,14 @@
     </hostdev>
 
     <!--
-      Existing individual USB tests are retained so redefining this domain
-      does not silently remove them. These are optional because a device may
-      be unplugged when Windows starts; they are not a reliable replacement
-      for passing a dedicated controller.
+      EXPERIMENTAL: pass the complete 10:00.0 USB controller as a PCI device.
+      This replaces the earlier individual USB hostdev entries. The controller
+      shares IOMMU group 27 with bridge 06:0c.0; libvirt must be able to
+      temporarily manage the endpoint without assigning the bridge.
     -->
-    <hostdev mode='subsystem' type='usb' managed='yes'>
-      <source startupPolicy='optional'>
-        <vendor id='0x046d'/>
-        <product id='0xc547'/>
-        <address bus='1' port='8'/>
-      </source>
-    </hostdev>
-    <hostdev mode='subsystem' type='usb' managed='yes'>
-      <source startupPolicy='optional'>
-        <vendor id='0x1d50'/>
-        <product id='0x615e'/>
-        <address bus='1' port='1'/>
-      </source>
-    </hostdev>
-    <hostdev mode='subsystem' type='usb' managed='yes'>
-      <source startupPolicy='optional'>
-        <vendor id='0x1d50'/>
-        <product id='0x615e'/>
-        <address bus='1' port='9'/>
+    <hostdev mode='subsystem' type='pci' managed='yes'>
+      <source>
+        <address domain='0x0000' bus='0x10' slot='0x00' function='0x0'/>
       </source>
     </hostdev>
 
