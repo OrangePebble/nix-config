@@ -5,54 +5,53 @@
 }:
 let
   vmName = "win11";
-  radeonPciAddress = "0000:03:00.0";
   # This service, rather than `virsh start`, performs the experimental live
   # Radeon handoff. It runs outside the graphical user session that it stops.
   startVm = pkgs.writeShellScript "${vmName}-start" ''
     set -eu
+    shopt -s nullglob
 
     if ${pkgs.libvirt}/bin/virsh -c qemu:///system domstate ${vmName} 2>/dev/null | ${pkgs.gnugrep}/bin/grep -qx running; then
       echo "${vmName} is already running" >&2
       exit 1
     fi
 
-    # Stopping greetd alone does not stop the already-logged-in niri user
-    # service. Stop both the display manager and niri/DMS through its user bus.
-    # Do not replace the DRM-node wait below with a fixed sleep: no process may
-    # hold the Radeon when libvirt replaces amdgpu with vfio-pci.
-    ${pkgs.systemd}/bin/systemctl stop display-manager.service
+    # Shut down the user graphical session in systemd's intended order:
+    # niri-shutdown.target stops graphical-session services (DMS, portals,
+    # autostart apps, ...) before the compositor and display manager stop.
     tmp_uid="$(${pkgs.coreutils}/bin/id -u ${vars.username})"
     ${pkgs.util-linux}/bin/runuser -u ${vars.username} -- ${pkgs.coreutils}/bin/env \
       XDG_RUNTIME_DIR="/run/user/$tmp_uid" \
       DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$tmp_uid/bus" \
-      ${pkgs.systemd}/bin/systemctl --user stop dms.service app-easyeffects.script@autostart.service || true
+      ${pkgs.systemd}/bin/systemctl --user start niri-shutdown.target
     ${pkgs.util-linux}/bin/runuser -u ${vars.username} -- ${pkgs.coreutils}/bin/env \
       XDG_RUNTIME_DIR="/run/user/$tmp_uid" \
       DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$tmp_uid/bus" \
       ${pkgs.systemd}/bin/systemctl --user stop niri.service
+    ${pkgs.systemd}/bin/systemctl stop display-manager.service
 
-    shopt -s nullglob
+    # Discover the Radeon DRM nodes so the handoff can verify that no process
+    # still has the card or render device open before libvirt replaces amdgpu.
     tmp_drm_nodes=()
-    for tmp_node in /sys/bus/pci/devices/${radeonPciAddress}/drm/card*/dev /sys/bus/pci/devices/${radeonPciAddress}/drm/renderD*/dev; do
+    for tmp_node in /sys/bus/pci/devices/0000:03:00.0/drm/card*/dev /sys/bus/pci/devices/0000:03:00.0/drm/renderD*/dev; do
       tmp_drm_nodes+=("/dev/dri/$(basename "$(dirname "$tmp_node")")")
     done
-
     if [ "''${#tmp_drm_nodes[@]}" -eq 0 ]; then
       echo "could not find Radeon DRM nodes" >&2
       ${restoreDisplay}
       exit 1
     fi
-
     # Some autostarted user applications, such as EasyEffects, use only the
     # Radeon render node and outlive niri. Kill any remaining DRM users after
     # the graceful service shutdown above; the host session is being replaced
     # by Windows at this point, so these processes must not survive.
     ${pkgs.psmisc}/bin/fuser -k -TERM "''${tmp_drm_nodes[@]}" || true
-    ${pkgs.coreutils}/bin/sleep 1
     # Some Electron clients ignore SIGTERM while their wrapper keeps the render
     # node open. A forced kill is required before a device-driver handoff.
+    ${pkgs.coreutils}/bin/sleep 1
     ${pkgs.psmisc}/bin/fuser -k -KILL "''${tmp_drm_nodes[@]}" || true
-
+    # Wait until no process has any Radeon DRM node open. This confirms that
+    # the driver can be detached without leaving a process using the device.
     tmp_attempt=0
     while ${pkgs.psmisc}/bin/fuser -s "''${tmp_drm_nodes[@]}"; do
       tmp_attempt=$((tmp_attempt + 1))
@@ -65,11 +64,12 @@ let
     done
     ${pkgs.coreutils}/bin/sleep 1
 
+    # A failed start may not emit libvirt's release:end hook, so restore the
+    # graphical session explicitly instead of leaving the host headless.
     if ! ${pkgs.libvirt}/bin/virsh -c qemu:///system start ${vmName}; then
       ${restoreDisplay}
       exit 1
     fi
-
   '';
 
   restoreDisplay = pkgs.writeShellScript "${vmName}-restore-display" ''
@@ -83,8 +83,9 @@ let
 
     ${pkgs.systemd}/bin/systemctl start display-manager.service
 
-    # The user manager survives the handoff, so DMS remains explicitly stopped
-    # after niri starts again. Start it only after niri owns a Wayland socket.
+    # niri-shutdown.target stopped graphical-session services, including DMS.
+    # The display manager starts a fresh niri session; wait for its Wayland
+    # socket before starting DMS again.
     tmp_uid="$(${pkgs.coreutils}/bin/id -u ${vars.username})"
     tmp_attempt=0
     while ! { [ -S "/run/user/$tmp_uid/wayland-1" ] && ${pkgs.util-linux}/bin/runuser -u ${vars.username} -- ${pkgs.coreutils}/bin/env \
@@ -134,10 +135,9 @@ in
     };
   };
 
-  # USB policy passes only controllers 12:00.3 and 12:00.4. Group 27 cannot
-  # be passed through: it includes upstream bridge 06:0c.0, which libvirt
-  # rejects as a non-endpoint PCI hostdev. Do not add automatic USB forwarding
-  # for the 10:00.0 chipset controller.
+  # USB policy passes the isolated controllers 12:00.3 and 12:00.4, plus the
+  # tested 10:00.0 endpoint. The latter shares group 27 with bridge 06:0c.0;
+  # libvirt leaves that bridge host-owned while assigning the endpoint.
   systemd.services."${vmName}-start" = {
     description = "Safely hand the Radeon to ${vmName}";
     serviceConfig.Type = "oneshot";

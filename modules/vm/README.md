@@ -19,7 +19,7 @@
 | Ryzen iGPU | `0000:12:00.0`, group 29 | Keep enabled in firmware as a recovery/headless fallback. It does not need a monitor for the normal live-switch workflow. |
 | USB controller | `0000:12:00.3`, group 31 | Safe Windows-only controller; no host devices were present during discovery. |
 | USB controller | `0000:12:00.4`, group 32 | Safe Windows controller for the Rift and anything plugged into its physical ports. |
-| USB controller | `0000:10:00.0`, group 27 with bridge `0000:06:0c.0` | **Never pass through as PCI.** Resetting it destabilized the host. Keep it owned by NixOS. |
+| USB controller | `0000:10:00.0`, group 27 with bridge `0000:06:0c.0` | Passed successfully as an endpoint while the bridge remains host-owned; its physical ports are Windows-only while the VM runs. |
 | USB controller | `0000:13:00.0`, group 34 | Detaching/resetting it caused a host reset; excluded from the guest. |
 | Realtek Ethernet | `0000:0e:00.0`, group 25 | Not currently passed. Windows uses the virtual e1000e NAT adapter. |
 | MediaTek Wi-Fi | `0000:0f:00.0`, group 26 | Not passed; NixOS retains Wi-Fi and remote recovery. |
@@ -75,47 +75,23 @@ systemctl --user start dms.service
 
 ## USB policy
 
-The stable solution is controller passthrough for `12:00.3` and `12:00.4`.
-Use their physical ports as Windows-only ports. A dedicated PCIe USB controller
-in its own IOMMU group is the recommended long-term way to obtain a complete
-Windows USB zone.
+Controller passthrough is used for `12:00.3`, `12:00.4`, and `10:00.0`.
+Their physical ports are Windows-only while the VM runs. The `10:00.0`
+controller is an AMD 600-series chipset USB 3.2 endpoint in IOMMU group 27,
+which also contains bridge `06:0c.0`.
 
-### Why `10:00.0` is excluded
+Libvirt rejects the bridge itself as a non-endpoint hostdev, but successfully
+assigns `10:00.0` while leaving `06:0c.0` bound to `pcieport`. Windows then
+gets the controller and its physical ports, including USB devices connected
+after Windows has started. This is preferable to individual USB hostdev
+entries, which were unreliable for the Logitech receiver, MediaTek Bluetooth,
+and Cosmos devices.
 
-`10:00.0` is an AMD 600-series chipset USB 3.2 controller. Its IOMMU group
-also contains upstream bridge `06:0c.0`; it is not independently isolated.
-
-A complete-group test was attempted by adding both functions as managed PCI
-hostdevs. Although `virsh define` accepted the XML, starting the domain failed
-before QEMU launched with:
-
-```text
-internal error: Non-endpoint PCI devices cannot be assigned to guests
-```
-
-`06:0c.0` is a PCI bridge, not an endpoint, so libvirt will not assign it to
-the guest. Passing only `10:00.0` leaves the group non-viable because
-`06:0c.0` remains bound to `pcieport`. `10:00.0` also exposes only a `bus`
-reset, so even a manual bridge-driver-detach experiment would remain unsafe
-and can reset/disconnect host USB. Keep this controller owned by NixOS.
-
-Individual USB hostdev entries were tried for the Logitech receiver, MediaTek
-Bluetooth, and two Cosmos devices. Libvirt accepted vendor/product selectors
-and, on this host's libvirt 12.7, stable USB bus/port selectors. The Cosmos
-serial numbers are:
-
-```text
-40BB6A33D20485C2  (USB bus 1, port 1)
-3787A138137FBDB5  (USB bus 1, port 9)
-```
-
-However, the individual devices did not behave reliably in Windows. Automatic
-forwarding of every non-hub device behind `10:00.0` was also tested; libvirt
-attached the devices, but it did not provide reliable Windows input/Bluetooth
-behavior. The three explicit optional leaf-device entries currently present in
-`win11.xml` are retained only to preserve the existing domain definition;
-they are not a recommended solution. Keep `10:00.0` on NixOS unless the
-separate full-group experiment above proves stable.
+The controller uses a bus-level reset. Do not manually unbind `06:0c.0`:
+that made startup unstable in testing. If controller release causes a host
+failure on a future kernel, use the recovery path and reboot rather than
+attempting to assign the bridge. A dedicated PCIe USB controller in its own
+IOMMU group remains the cleaner long-term design.
 
 ### Bluetooth
 

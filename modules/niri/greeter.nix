@@ -14,13 +14,22 @@
           name = "niri";
           customConfig = ''
             // Taken from ./config/dms/outputs.kdl
-            // The Radeon drives the host greeter while win11 is off.
             output "DP-1" {
                 mode "2560x1440@165.002"
                 scale 1
                 position x=0 y=0
                 variable-refresh-rate on-demand=true
                 focus-at-startup
+                layout {
+                    always-center-single-column
+                }
+            }
+            output "DP-2" {
+                off
+                mode "1920x1080@144.001"
+                scale 1
+                position x=2560 y=180
+                variable-refresh-rate on-demand=true
             }
             // Taken from https://danklinux.com/docs/dankgreeter/configuration#niri
             hotkey-overlay {

@@ -1,16 +1,3 @@
-<!--
-  This is a persistent libvirt domain definition, not a virt-manager settings
-  file. Follow README.md to build the disk, import it, and start the VM.
-
-  NixOS normally owns the Radeon with amdgpu. The win11-start system service
-  stops the graphical session and lets libvirt bind the Radeon to vfio-pci only
-  while this VM runs; the release hook restores the host display afterwards.
-  Never configure this domain to autostart or start it with `virsh start`.
-
-  The XML comments are setup reminders. Keep README.md as the durable guide:
-  virt-manager or libvirt may rewrite a domain definition without preserving
-  these comments.
--->
 <domain type='kvm'>
   <name>win11</name>
   <!-- Keep this stable so `virsh define` updates rather than recreates the TPM. -->
@@ -70,10 +57,11 @@
       <target dev='sdb' bus='sata'/>
       <readonly/>
     </disk>
-    <!-- Windows includes a driver for e1000e; switch to VirtIO after installing its driver. -->
     <interface type='network'>
       <source network='default'/>
+      <!-- Windows includes a driver for e1000e but we can switch to VirtIO after installing its driver for better performance. -->
       <model type='e1000e'/>
+      <!-- <model type='virtio'/> -->
     </interface>
     <serial type='pty'>
       <target type='isa-serial' port='0'>
@@ -83,12 +71,7 @@
     <console type='pty'>
       <target type='serial' port='0'/>
     </console>
-    <!--
-      No QXL/SPICE display: Windows must use only the passed-through Radeon.
-      QXL previously appeared as a second virtual monitor and claimed the
-      Windows login prompt. Host USB leaf devices are attached dynamically.
-    -->
-    <!-- Reserve sufficient ports for all leaf devices forwarded from 10:00.0. -->
+    <!-- Fallback mouse, keyboard, and tablet. Not sure how useful they'll be because I'm passing everything through, but I'll keep them. -->
     <controller type='usb' index='0' model='qemu-xhci' ports='15'/>
     <input type='tablet' bus='usb'/>
     <input type='mouse' bus='ps2'/>
@@ -99,51 +82,32 @@
     <memballoon model='none'/>
 
     <!--
-      USB controller passthrough is limited to the two isolated controllers
-      below. Group 27 cannot be passed: it also contains bridge 06:0c.0, and
-      libvirt rejects PCI bridges as non-endpoint guest hostdevs.
-    -->
-
-    <!--
-      Second staged USB controller: IOMMU group 31. It has no currently
-      connected host devices and is reserved for Windows-only physical ports.
+      We're passing whole USB controllers as PCI devices instead of having to define every device we want in the VM at the start.
+      The `bus='0x10'` device has a parent device but we can't passthrough that one.
     -->
     <hostdev mode='subsystem' type='pci' managed='yes'>
       <source>
         <address domain='0x0000' bus='0x12' slot='0x00' function='0x3'/>
       </source>
     </hostdev>
-
-    <!--
-      First staged USB passthrough device: the isolated Rift controller in
-      IOMMU group 32. It carries the Rift headset, audio, and sensors, but not
-      the host keyboard/mouse or Bluetooth controller.
-    -->
     <hostdev mode='subsystem' type='pci' managed='yes'>
       <source>
         <address domain='0x0000' bus='0x12' slot='0x00' function='0x4'/>
       </source>
     </hostdev>
-
-    <!--
-      EXPERIMENTAL: pass the complete 10:00.0 USB controller as a PCI device.
-      This replaces the earlier individual USB hostdev entries. The controller
-      shares IOMMU group 27 with bridge 06:0c.0; libvirt must be able to
-      temporarily manage the endpoint without assigning the bridge.
-    -->
     <hostdev mode='subsystem' type='pci' managed='yes'>
       <source>
         <address domain='0x0000' bus='0x10' slot='0x00' function='0x0'/>
       </source>
     </hostdev>
 
-    <!-- AMD GPU: 0000:03:00.0 / 1002:73bf -->
+    <!-- AMD GPU -->
     <hostdev mode='subsystem' type='pci' managed='yes'>
       <source>
         <address domain='0x0000' bus='0x03' slot='0x00' function='0x0'/>
       </source>
     </hostdev>
-    <!-- GPU HDMI/DisplayPort audio: 0000:03:00.1 / 1002:ab28 -->
+    <!-- GPU HDMI/DisplayPort audio -->
     <hostdev mode='subsystem' type='pci' managed='yes'>
       <source>
         <address domain='0x0000' bus='0x03' slot='0x00' function='0x1'/>
