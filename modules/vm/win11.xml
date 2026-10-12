@@ -99,9 +99,9 @@
     <memballoon model='none'/>
 
     <!--
-      USB controller passthrough is deliberately limited to the two safe
-      controllers below. Controller 10:00.0 shares an IOMMU group with a PCIe
-      bridge and controller 13:00.0 reset the host; both remain with NixOS.
+      USB controller passthrough is limited to the two isolated controllers
+      below. Group 27 cannot be passed: it also contains bridge 06:0c.0, and
+      libvirt rejects PCI bridges as non-endpoint guest hostdevs.
     -->
 
     <!--
@@ -126,11 +126,32 @@
     </hostdev>
 
     <!--
-      Devices from unsafe chipset controller 0000:10:00.0 remain with NixOS.
-      Their individual hostdev definitions were accepted by libvirt but did not
-      function reliably in Windows. Do not pass the controller itself because
-      it shares an IOMMU group with a PCIe bridge.
+      Existing individual USB tests are retained so redefining this domain
+      does not silently remove them. These are optional because a device may
+      be unplugged when Windows starts; they are not a reliable replacement
+      for passing a dedicated controller.
     -->
+    <hostdev mode='subsystem' type='usb' managed='yes'>
+      <source startupPolicy='optional'>
+        <vendor id='0x046d'/>
+        <product id='0xc547'/>
+        <address bus='1' port='8'/>
+      </source>
+    </hostdev>
+    <hostdev mode='subsystem' type='usb' managed='yes'>
+      <source startupPolicy='optional'>
+        <vendor id='0x1d50'/>
+        <product id='0x615e'/>
+        <address bus='1' port='1'/>
+      </source>
+    </hostdev>
+    <hostdev mode='subsystem' type='usb' managed='yes'>
+      <source startupPolicy='optional'>
+        <vendor id='0x1d50'/>
+        <product id='0x615e'/>
+        <address bus='1' port='9'/>
+      </source>
+    </hostdev>
 
     <!-- AMD GPU: 0000:03:00.0 / 1002:73bf -->
     <hostdev mode='subsystem' type='pci' managed='yes'>

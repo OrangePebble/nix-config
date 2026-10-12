@@ -81,6 +81,15 @@ let
       exit 0
     fi
 
+    if [ "$#" -ne 0 ]; then
+      # VFIO teardown of 10:00.0 can crash the running kernel while libvirt
+      # returns it to xhci_hcd. A reboot avoids trying to recover that device
+      # in-place. Delay the reboot so the libvirt release hook can finish.
+      ${pkgs.systemd}/bin/systemd-run --unit=${vmName}-reboot-after-exit --on-active=5s --no-block \
+        ${pkgs.systemd}/bin/systemctl reboot
+      exit 0
+    fi
+
     ${pkgs.systemd}/bin/systemctl start display-manager.service
 
     # The user manager survives the handoff, so DMS remains explicitly stopped
@@ -134,10 +143,10 @@ in
     };
   };
 
-  # USB policy: pass only PCI controllers 12:00.3 and 12:00.4 from win11.xml.
-  # Controller 10:00.0 shares an IOMMU group with an upstream bridge. Both
-  # whole-controller and individual-device experiments from it were unreliable,
-  # so no automatic USB forwarding is configured here.
+  # USB policy passes only controllers 12:00.3 and 12:00.4. Group 27 cannot
+  # be passed through: it includes upstream bridge 06:0c.0, which libvirt
+  # rejects as a non-endpoint PCI hostdev. Do not add automatic USB forwarding
+  # for the 10:00.0 chipset controller.
   systemd.services."${vmName}-start" = {
     description = "Safely hand the Radeon to ${vmName}";
     serviceConfig.Type = "oneshot";

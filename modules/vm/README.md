@@ -31,10 +31,10 @@ NixOS uses Radeon outputs `DP-1` and `DP-2` while Windows is off. Starting
 Radeon DRM users. It waits for the DRM nodes to be clear, then libvirt assigns
 the Radeon to Windows. Windows uses those same physical Radeon outputs.
 
-When Windows shuts down, libvirt reattaches the Radeon to `amdgpu`. Its QEMU
-`release:end` hook starts the display manager, waits for niri's Wayland socket,
-and starts DMS again. The user session is intentionally replaced; GPU-using
-applications such as Discord may be killed during the handoff.
+When Windows shuts down, libvirt reattaches the Radeon to `amdgpu` and the
+`release:end` hook schedules a host reboot. Rebooting avoids in-place VFIO
+teardown/rebind failures; because the graphical session was already logged out,
+this adds only the normal reboot delay before Linux is available again.
 
 This avoids the original unsafe approach, which tried to detach the active GPU
 while niri/Mesa still held it open and caused host resets.
@@ -65,12 +65,12 @@ sudo systemctl start win11-start
 ```
 
 Shut Windows down normally. Do not force it off unless recovery requires it.
-The display manager should return automatically. If niri returns with only a
-gray background, start DMS manually:
+The host should reboot automatically after Windows exits. If it does not,
+inspect the hook and reboot transaction:
 
 ```sh
-systemctl --user reset-failed dms.service
-systemctl --user start dms.service
+sudo journalctl -b -u win11-reboot-after-exit.service --no-pager
+sudo systemctl reboot
 ```
 
 ## USB policy
@@ -84,7 +84,20 @@ Windows USB zone.
 
 `10:00.0` is an AMD 600-series chipset USB 3.2 controller. Its IOMMU group
 also contains upstream bridge `06:0c.0`; it is not independently isolated.
-Passing the controller reset/disconnected host USB and destabilized the system.
+
+A complete-group test was attempted by adding both functions as managed PCI
+hostdevs. Although `virsh define` accepted the XML, starting the domain failed
+before QEMU launched with:
+
+```text
+internal error: Non-endpoint PCI devices cannot be assigned to guests
+```
+
+`06:0c.0` is a PCI bridge, not an endpoint, so libvirt will not assign it to
+the guest. Passing only `10:00.0` leaves the group non-viable because
+`06:0c.0` remains bound to `pcieport`. `10:00.0` also exposes only a `bus`
+reset, so even a manual bridge-driver-detach experiment would remain unsafe
+and can reset/disconnect host USB. Keep this controller owned by NixOS.
 
 Individual USB hostdev entries were tried for the Logitech receiver, MediaTek
 Bluetooth, and two Cosmos devices. Libvirt accepted vendor/product selectors
@@ -99,7 +112,10 @@ serial numbers are:
 However, the individual devices did not behave reliably in Windows. Automatic
 forwarding of every non-hub device behind `10:00.0` was also tested; libvirt
 attached the devices, but it did not provide reliable Windows input/Bluetooth
-behavior and has been removed. Keep `10:00.0` on NixOS.
+behavior. The three explicit optional leaf-device entries currently present in
+`win11.xml` are retained only to preserve the existing domain definition;
+they are not a recommended solution. Keep `10:00.0` on NixOS unless the
+separate full-group experiment above proves stable.
 
 ### Bluetooth
 
