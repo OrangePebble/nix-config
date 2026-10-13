@@ -16,19 +16,31 @@ let
       exit 1
     fi
 
-    # Shut down the user graphical session in systemd's intended order:
-    # niri-shutdown.target stops graphical-session services (DMS, portals,
-    # autostart apps, ...) before the compositor and display manager stop.
+    # Stop the greeter before logging out the active graphical session, so it
+    # cannot start a replacement session while the Radeon is being detached.
+    ${pkgs.systemd}/bin/systemctl stop display-manager.service
+
+    # Stop graphical-session.target first so the next login gets a fresh
+    # session transaction and automatically starts DMS again. Terminating the
+    # graphical session then stops niri and any remaining session processes.
     tmp_uid="$(${pkgs.coreutils}/bin/id -u ${vars.username})"
     ${pkgs.util-linux}/bin/runuser -u ${vars.username} -- ${pkgs.coreutils}/bin/env \
       XDG_RUNTIME_DIR="/run/user/$tmp_uid" \
       DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$tmp_uid/bus" \
       ${pkgs.systemd}/bin/systemctl --user start niri-shutdown.target
-    ${pkgs.util-linux}/bin/runuser -u ${vars.username} -- ${pkgs.coreutils}/bin/env \
-      XDG_RUNTIME_DIR="/run/user/$tmp_uid" \
-      DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$tmp_uid/bus" \
-      ${pkgs.systemd}/bin/systemctl --user stop niri.service
-    ${pkgs.systemd}/bin/systemctl stop display-manager.service
+
+    # Find and terminate only the user's active Wayland session. This logs out
+    # the graphical desktop while preserving SSH and other recovery sessions.
+    tmp_session_id=""
+    while read -r tmp_id tmp_session_uid tmp_session_user tmp_session_seat tmp_rest; do
+      if [ "$tmp_session_user" = "${vars.username}" ] && [ "$(${pkgs.systemd}/bin/loginctl show-session "$tmp_id" -p Type --value 2>/dev/null)" = wayland ]; then
+        tmp_session_id="$tmp_id"
+        break
+      fi
+    done < <(${pkgs.systemd}/bin/loginctl list-sessions --no-legend)
+    if [ -n "$tmp_session_id" ]; then
+      ${pkgs.systemd}/bin/loginctl terminate-session "$tmp_session_id"
+    fi
 
     # Discover the Radeon DRM nodes so the handoff can verify that no process
     # still has the card or render device open before libvirt replaces amdgpu.
@@ -81,32 +93,10 @@ let
       exit 0
     fi
 
+    # The user has been logged out before the VM starts. Starting the display
+    # manager is sufficient; it presents the greeter and the next login starts
+    # a fresh niri session with DMS through graphical-session.target.
     ${pkgs.systemd}/bin/systemctl start display-manager.service
-
-    # niri-shutdown.target stopped graphical-session services, including DMS.
-    # The display manager starts a fresh niri session; wait for its Wayland
-    # socket before starting DMS again.
-    tmp_uid="$(${pkgs.coreutils}/bin/id -u ${vars.username})"
-    tmp_attempt=0
-    while ! { [ -S "/run/user/$tmp_uid/wayland-1" ] && ${pkgs.util-linux}/bin/runuser -u ${vars.username} -- ${pkgs.coreutils}/bin/env \
-      XDG_RUNTIME_DIR="/run/user/$tmp_uid" \
-      DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$tmp_uid/bus" \
-      ${pkgs.systemd}/bin/systemctl --user is-active --quiet niri.service; }; do
-      tmp_attempt=$((tmp_attempt + 1))
-      [ "$tmp_attempt" -lt 300 ] || exit 0
-      ${pkgs.coreutils}/bin/sleep 0.1
-    done
-    # DMS/Quickshell must connect after niri has bound its Wayland socket.
-    ${pkgs.coreutils}/bin/sleep 1
-
-    ${pkgs.util-linux}/bin/runuser -u ${vars.username} -- ${pkgs.coreutils}/bin/env \
-      XDG_RUNTIME_DIR="/run/user/$tmp_uid" \
-      DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$tmp_uid/bus" \
-      ${pkgs.systemd}/bin/systemctl --user reset-failed dms.service
-    ${pkgs.util-linux}/bin/runuser -u ${vars.username} -- ${pkgs.coreutils}/bin/env \
-      XDG_RUNTIME_DIR="/run/user/$tmp_uid" \
-      DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$tmp_uid/bus" \
-      ${pkgs.systemd}/bin/systemctl --user start dms.service
   '';
 in
 {
@@ -172,6 +162,6 @@ in
   # Experimental live-switch usage:
   # 1. Start Windows only with `sudo systemctl start win11-start`.
   # 2. Do not run `virsh start win11`: it bypasses the DRM-user safety check.
-  # 3. Shut Windows down normally. The libvirt release hook restarts niri and
-  #    DMS after amdgpu has reclaimed the Radeon; see README.md for recovery.
+  # 3. Shut Windows down normally. The libvirt release hook starts the display
+  #    manager; log in to start a fresh niri/DMS session.
 }

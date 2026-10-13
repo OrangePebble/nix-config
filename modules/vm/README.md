@@ -8,7 +8,7 @@
 > graphical session and terminates every process with the Radeon DRM nodes open
 > before libvirt binds the GPU to VFIO. Keep SSH, Tailscale, or another recovery
 > path available. Do **not** start this VM with `virsh start`; use
-> `sudo systemctl start win11-start`.
+> `sudo systemctl --no-block start win11-start`.
 
 ## Hardware findings
 
@@ -32,9 +32,9 @@ Radeon DRM users. It waits for the DRM nodes to be clear, then libvirt assigns
 the Radeon to Windows. Windows uses those same physical Radeon outputs.
 
 When Windows shuts down, libvirt reattaches the Radeon to `amdgpu`. Its QEMU
-`release:end` hook starts the display manager, waits for niri's Wayland socket,
-and starts DMS again. The user session is intentionally replaced; GPU-using
-applications such as Discord may be killed during the handoff.
+`release:end` hook starts the display manager again. Because the graphical user
+session was terminated before Windows started, the greeter appears and the
+next login starts a fresh niri/DMS session.
 
 This avoids the original unsafe approach, which tried to detach the active GPU
 while niri/Mesa still held it open and caused host resets.
@@ -61,17 +61,12 @@ sudo virsh -c qemu:///system define modules/vm/win11.xml
 Start Windows only through the handoff service:
 
 ```sh
-sudo systemctl start win11-start
+sudo systemctl --no-block start win11-start
 ```
 
 Shut Windows down normally. Do not force it off unless recovery requires it.
-The display manager should return automatically. If niri returns with only a
-gray background, start DMS manually:
-
-```sh
-systemctl --user reset-failed dms.service
-systemctl --user start dms.service
-```
+The display manager should return to the greeter automatically. Log in to
+start a fresh niri/DMS session.
 
 ## USB policy
 
