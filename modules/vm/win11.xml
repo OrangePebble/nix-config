@@ -48,8 +48,9 @@
     <disk type='file' device='disk'>
       <driver name='qemu' type='qcow2' cache='none' io='native' discard='unmap'/>
       <source file='/var/lib/libvirt/images/win11.qcow2'/>
-      <!-- SATA works with the Windows installer without a separate VirtIO ISO. -->
+      <!-- Windows includes a driver for SATA but we can switch to VirtIO after installing its driver for better performance. -->
       <target dev='sda' bus='sata'/>
+      <!-- <target dev='vda' bus='virtio'/> -->
     </disk>
     <disk type='file' device='cdrom'>
       <driver name='qemu' type='raw'/>
