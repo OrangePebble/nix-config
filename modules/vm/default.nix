@@ -9,6 +9,9 @@
 #  `sudo qemu-img create -f qcow2 /var/lib/libvirt/images/win11.qcow2 200G`
 # And to increase the size of the disk later, run the following when the VM is off:
 #  `sudo qemu-img resize /var/lib/libvirt/images/win11.qcow2 +100G`
+# WARN: USB devices can't be connected to the red ports while the VM is starting or
+#  the whole PC will crash. Other ports are fine, and the red ports can be used
+#  while the VM is running.
 # WARN: Bluetooth does not work very well because both the Host and the VM are the
 #  same BT adapter but use different pairing keys, which has weird behaviour on
 #  BT devices. Careful when using BT devices and try only pairing them to either
