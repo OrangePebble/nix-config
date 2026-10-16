@@ -104,10 +104,10 @@
     obs-studio
     obsidian
     p7zip
-    pdf4qt # PDF editor.
     qbittorrent
     qdirstat # Disk usage analyzer with the tree/block view. Alternative to WinDirStat and KDirStat.
     speedcrunch
+    stirling-pdf-desktop # PDF editor. `pdf4qt` is a good alternative.
     supersonic # Subsonic/Navidrome client.
     unrar
 
@@ -117,6 +117,8 @@
 
     # blanket # App to play background noise like rain and wind.
     # graphite # inkscape alternative, slows the rebuild too much
+    # nocturne # Subsonic/Navidrome client.
+    # planify # Task manager with CalDAV support.
   ];
 
   hm = {
