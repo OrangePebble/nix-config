@@ -65,10 +65,6 @@ let
         #  it cannot start a replacement session during the Radeon handoff.
         ${pkgs.systemd}/bin/systemctl stop display-manager.service
 
-        # The MediaTek adapter is behind 10:00.0. Stop BlueZ before libvirt
-        #  removes that controller so it does not retain a disappearing hci device.
-        ${pkgs.systemd}/bin/systemctl stop bluetooth.service
-
         # Stop graphical-session.target first so the next login gets a fresh
         #  session transaction and automatically starts DMS again. Terminating
         #  the graphical session then stops niri and remaining session processes.
