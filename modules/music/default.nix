@@ -29,31 +29,11 @@
 
     # Youtube and many other sources TUI downloader.
     yt-dlp
-
-    # App to play background noise like rain and wind.
-    blanket
-
-    # Music player
-    gapless
-
-    # Subsonic/Navidrome client.
-    supersonic
   ];
 
   hm.services.flatpak.packages = [
     # yt-dlp GUI frontend.
     "org.nickvision.tubeconverter"
-
-    # App to play background music/noises from Animal Crossing.
-    "camp.nook.nookdesktop"
-
-    # Good looking widget that displays and controls the currently playing media.
-    # Could be cool to use with something like a terminal music player.
-    # But on KDE I could just use the included media player in the system tray.
-    "dev.geopjr.Turntable"
-
-    # Cool internet radio app.
-    "de.haeckerfelix.Shortwave"
   ];
 
   # This is causing errors to show up :(

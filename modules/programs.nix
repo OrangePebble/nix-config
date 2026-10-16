@@ -76,101 +76,47 @@
   hardware.logitech.wireless.enable = true;
 
   fonts.packages = with pkgs; [
-    # My old monofont/programming font.
-    nerd-fonts.fira-code
-    # My default monofont/programming font.
     nerd-fonts.sauce-code-pro
-    # A good font for CAD/3D printing.
-    # A nerd-fonts variant also exists.
-    overpass
-    # A minecraft themed font that I'm manually patching with nerdfonts.
-    # A good alternative for a blocky-looking font is Scientifica.
-    # https://wiki.nixos.org/wiki/Fonts#Patching_nerdfonts_into_fonts
-    # https://github.com/ryanoasis/nerd-fonts/tree/master#font-patcher
-    # (monocraft.overrideAttrs (o: {
-    #   nativeBuildInputs = [ nerd-font-patcher ];
-    #   postInstall = ''
-    #     mkdir -p $out/share/fonts/truetype/{monocraft,monocraft-nerd}
-    #     mv $out/share/fonts/truetype/*Monocraft.ttc $out/share/fonts/truetype/monocraft/
-    #     rm $out/share/fonts/truetype/*.ttc
-    #     for f in $out/share/fonts/truetype/monocraft/*.ttc; do
-    #       nerd-font-patcher --complete --careful --outputdir $out/share/fonts/truetype/monocraft-nerd/ $f
-    #     done
-    #   '';
-    # }))
+    nerd-fonts.fira-code
+    monocraft # Minecraft themed font. Another good blocky is Scientifica.
+    overpass # A good font for CAD/3D printing. A nerd-fonts variant also exists.
   ];
 
   environment.systemPackages = with pkgs; [
-    # Disk and partition managers.
+    blender
+    chromium
+    discord
+    easyeffects
+    ferdium
+    firefox
+    gimp-with-plugins
+    gnome-logs # App to see system logs.
     gparted
+    haruna
+    hieroglyphic # Find LaTeX symbols by sketching them.
+    inkscape-with-extensions
+    kdePackages.kate
     kdePackages.partitionmanager
+    keepassxc
+    libreoffice-qt-stable
+    mission-center # Task manager like the one on windows. Looks nice.
+    mpv
+    obs-studio
+    obsidian
+    p7zip
+    pdf4qt # PDF editor.
+    qbittorrent
+    qdirstat # Disk usage analyzer with the tree/block view. Alternative to WinDirStat and KDirStat.
+    speedcrunch
+    supersonic # Subsonic/Navidrome client.
+    unrar
 
     # Run unpatched binaries. Good for running "short-term" binaries where you
     #  don't want to add the required libraries to nix-ld.
     inputs.nix-alien.packages.${pkgs.stdenv.hostPlatform.system}.nix-alien
 
-    # Archive tools.
-    unrar
-    p7zip
-    # peazip
-
-    # Document editors.
-    kdePackages.kate
-    libreoffice-qt-stable
-    obsidian
-
-    # Find LaTeX symbols by sketching them.
-    hieroglyphic
-
-    # Calculator.
-    speedcrunch
-
-    # Graphic editors.
-    inkscape-with-extensions
-    # graphite # inkscape alternative, slows by rebuild too much
-    gimp-with-plugins
-    blender
-
-    # Downloading apps.
-    qbittorrent
-
-    # Media players.
-    haruna
-    mpv
-
-    # Video recording/streaming.
-    obs-studio
-
-    # Messaging.
-    discord
-    element-desktop
-    # App that aggregates websites and runs them in the background. Good for messaging websites.
-    ferdium
-
-    # GUI for dealing with git repos integrated with GitHub.
-    github-desktop
-
-    # Browsers.
-    chromium
-    firefox
-
-    # Password manager.
-    keepassxc
-
-    # Audio equalizer and other effects.
-    easyeffects
-
-    # App to see system logs.
-    gnome-logs
-
-    # Task manager like the one on windows. Looks nice.
-    mission-center
-
-    # PDF editor.
-    pdf4qt
-
-    # Disk usage analyzer with the tree/block view. Alternative to WinDirStat and KDirStat.
-    qdirstat
+    # blanket # App to play background noise like rain and wind.
+    # graphite # inkscape alternative, slows the rebuild too much
   ];
 
   hm = {
@@ -201,21 +147,15 @@
       ];
 
       packages = [
-        # App to make SVGs smaller.
-        "re.sonny.OhMySVG"
-
-        # App to read files and add highlight lines based on tags.
-        "io.github.phastmike.tags"
-
-        # App with lots of utilities for developers, like a chmod calculator, diff, QR code generator, and regex tester.
+        "com.orcaslicer.OrcaSlicer"
+        "io.github.phastmike.tags" # App to read files and add highlight lines based on tags.
         "me.iepure.devtoolbox"
+        "re.sonny.OhMySVG" # App to make SVGs smaller.
 
-        # VSCode without the telemetry.
         # Installing this as a flatpak so I can just use it casually without going through Nix.
         # To go through Nix see: https://wiki.nixos.org/wiki/Visual_Studio_Code
         "com.vscodium.codium"
 
-        "com.orcaslicer.OrcaSlicer"
         # rec {
         #   appId = "com.orcaslicer.OrcaSlicer";
         #   sha256 = "sha256-Q9N16m7ANyaJExDxQB2vcdy/nzfHQETugsxiBVeGYkc=";
@@ -224,6 +164,8 @@
         #     inherit sha256;
         #   }}";
         # }
+
+        # "camp.nook.nookdesktop" # App to play background music/noises from Animal Crossing.
       ];
     };
   };
