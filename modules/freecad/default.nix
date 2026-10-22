@@ -38,12 +38,25 @@
         Gui.addIconPath("${pkgs.tango-icon-theme}/share/icons/Tango/scalable/actions")
       '';
 
+      ".config/FreeCAD/Mod/CurvesWB".source = pkgs.fetchFromGitHub {
+        owner = "tomate44";
+        repo = "CurvesWB";
+        rev = "c08e21ba16b8d6c6846cee3c9a6b1ea950987f36"; # main
+        hash = "sha256-r2fULNvf+durt7+YV7CmOlln59NaT9j1sNAnTRUGwcA=";
+      };
+
+      # CurvesWB requires scipy.
+      ".config/FreeCAD/Mod/00-PythonPackages/Init.py".text = ''
+        import sys
+        sys.path.append("${pkgs.python313.withPackages (ps: [ ps.scipy ])}/${pkgs.python313.sitePackages}")
+      '';
     };
 
     services.flatpak = {
-      overrides.settings."org.freecad.FreeCAD".Environment.FREECAD_USER_HOME = "${
-        config.users.users.${vars.username}.home
-      }/.config/FreeCAD";
+      overrides.settings."org.freecad.FreeCAD" = {
+        Context.filesystems = [ "/nix/store:ro" ];
+        Environment.FREECAD_USER_HOME = "${config.users.users.${vars.username}.home}/.config/FreeCAD";
+      };
 
       packages = [
         {
