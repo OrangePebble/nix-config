@@ -22,10 +22,6 @@
     "enabled": true,
     "trigger": "sticker"
   },
-  "dankBitwarden": {
-    "enabled": false,
-    "trigger": "pass"
-  },
   "amdGpuMonitor": {
     "enabled": true,
     "minimumWidth": true,
@@ -37,5 +33,18 @@
   },
   "FocusedApp-remake": {
     "enabled": true
+  },
+  "bongoCat": {
+    "enabled": true,
+    "catSizePercent": 75,
+    "catYOffset": 2,
+    "pawHoldTime": 0,
+    "catColorMode": "classic",
+    "soundEnabled": false,
+    "showMetrics": true,
+    "enableBlinking": true,
+    "waitingTimeout": 1,
+    "mouseEnabled": false,
+    "metricsInBar": false
   }
 }
