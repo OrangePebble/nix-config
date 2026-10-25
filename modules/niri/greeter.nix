@@ -7,7 +7,7 @@
 {
   config = lib.mkIf config.opts.niri {
     services = {
-      displayManager.dms-greeter = {
+      displayManager.dux-greeter = {
         enable = true;
         configHome = config.users.users.${vars.username}.home;
         compositor = {

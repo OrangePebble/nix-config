@@ -31,13 +31,13 @@
         enable = true;
         useNautilus = false;
       };
-      dms-shell = {
+      dux-shell = {
         enable = true;
         # Use latest dms and quickshell.
         package = inputs.dms.packages.${pkgs.stdenv.hostPlatform.system}.default;
         quickshell.package = inputs.quickshell.packages.${pkgs.stdenv.hostPlatform.system}.quickshell;
       };
-      dsearch.enable = true;
+      dux-search.enable = true;
     };
     services = {
       # Backend of udiskie which manages removable media.

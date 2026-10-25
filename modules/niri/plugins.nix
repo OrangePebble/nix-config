@@ -13,7 +13,7 @@
 
   config = lib.mkIf config.opts.niri {
     # Hover over the install button in the DMS plugin website to get the names.
-    programs.dms-shell.plugins = {
+    programs.dux-shell.plugins = {
       # Launcher plugins
       calculator.enable = true;
       dankGifSearch.enable = true;
