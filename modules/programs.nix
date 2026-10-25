@@ -92,7 +92,6 @@
     gimp-with-plugins
     gnome-logs # App to see system logs.
     gparted
-    haruna
     hieroglyphic # Find LaTeX symbols by sketching them.
     inkscape-with-extensions
     kdePackages.kate
@@ -100,7 +99,6 @@
     keepassxc
     libreoffice-qt-stable
     mission-center # Task manager like the one on windows. Looks nice.
-    mpv
     obs-studio
     obsidian
     p7zip
