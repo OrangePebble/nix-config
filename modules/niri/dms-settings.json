@@ -639,5 +639,49 @@
     }
   ],
   "lockScreenShowWeather": false,
-  "lockScreenShowPowerActions": true
+  "lockScreenShowPowerActions": true,
+  "niriOverviewLauncherStyle": "full",
+  "dashCards": [
+    {
+      "id": "calendar",
+      "w": 5,
+      "h": 4,
+      "col": 1,
+      "row": 0
+    },
+    {
+      "id": "clock",
+      "w": 1,
+      "h": 1,
+      "col": 0,
+      "row": 0
+    },
+    {
+      "id": "network",
+      "w": 1,
+      "h": 2,
+      "col": 0,
+      "row": 2
+    },
+    {
+      "id": "disk",
+      "w": 1,
+      "h": 1,
+      "col": 0,
+      "row": 1
+    }
+  ],
+  "dashOptions": {
+    "calendar": {
+      "weekends": true
+    },
+    "clock": {
+      "date": true,
+      "tone": ""
+    },
+    "overview": {
+      "panelRows": 4
+    }
+  },
+  "firstDayOfWeek": 0
 }

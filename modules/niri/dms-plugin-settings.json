@@ -41,7 +41,7 @@
     "pawHoldTime": 0,
     "catColorMode": "classic",
     "soundEnabled": false,
-    "showMetrics": true,
+    "showMetrics": false,
     "enableBlinking": true,
     "waitingTimeout": 1,
     "mouseEnabled": false,
