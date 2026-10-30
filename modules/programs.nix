@@ -87,11 +87,11 @@
     chromium
     discord
     easyeffects
+    exfatprogs # Required to format drives with exFAT
     ferdium
     firefox
     gimp-with-plugins
     gnome-logs # App to see system logs.
-    gparted
     hieroglyphic # Find LaTeX symbols by sketching them.
     inkscape-with-extensions
     kdePackages.kate
