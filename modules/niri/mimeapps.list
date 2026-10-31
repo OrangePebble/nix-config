@@ -1,6 +1,6 @@
 [Added Associations]
 application/json=org.kde.kwrite.desktop;
-application/pdf=io.github.JakubMelka.Pdf4qt.Pdf4QtViewer.desktop;
+application/pdf=Stirling PDF.desktop;chromium-browser.desktop;org.inkscape.Inkscape.desktop;draw.desktop;gimp.desktop;
 application/x-desktop=org.kde.kate.desktop;org.kde.kwrite.desktop;okularApplication_txt.desktop;writer.desktop;io.github.phastmike.tags.desktop;io.gitlab.liferooter.TextPieces.desktop;nvim.desktop;
 application/x-extension-htm=zen.desktop;
 application/x-extension-html=zen.desktop;
@@ -38,7 +38,7 @@ x-scheme-handler/webcals=userapp-Thunderbird-G00LN3.desktop;
 
 [Default Applications]
 application/json=org.kde.kwrite.desktop
-application/pdf=io.github.JakubMelka.Pdf4qt.Pdf4QtViewer.desktop
+application/pdf=Stirling PDF.desktop;
 application/x-desktop=org.kde.kate.desktop
 application/x-extension-htm=zen-beta.desktop
 application/x-extension-html=zen-beta.desktop

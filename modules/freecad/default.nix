@@ -63,6 +63,13 @@
           appId = "org.freecad.FreeCAD";
           origin = "flathub-beta";
         }
+        {
+          # Pin KDE Platform 6.11 to the last commit known to work with
+          # FreeCAD's bundled PySide until Flathub publishes a compatible build.
+          appId = "org.kde.Platform//6.11";
+          origin = "flathub";
+          commit = "76fa01ac42ecf45d2c5020ef80de1c474c0c2ae86a51a79e8fec44c48f9dc473";
+        }
       ];
     };
   };
