@@ -147,7 +147,6 @@
       ];
 
       packages = [
-        "com.orcaslicer.OrcaSlicer"
         "io.github.phastmike.tags" # App to read files and add highlight lines based on tags.
         "me.iepure.devtoolbox"
         "re.sonny.OhMySVG" # App to make SVGs smaller.
@@ -156,14 +155,15 @@
         # To go through Nix see: https://wiki.nixos.org/wiki/Visual_Studio_Code
         "com.vscodium.codium"
 
-        # rec {
-        #   appId = "com.orcaslicer.OrcaSlicer";
-        #   sha256 = "sha256-Q9N16m7ANyaJExDxQB2vcdy/nzfHQETugsxiBVeGYkc=";
-        #   bundle = "${pkgs.fetchurl {
-        #     url = "https://github.com/OrcaSlicer/OrcaSlicer/releases/download/nightly-builds/OrcaSlicer-Linux-flatpak_nightly_x86_64.flatpak";
-        #     inherit sha256;
-        #   }}";
-        # }
+        # "com.orcaslicer.OrcaSlicer"
+        rec {
+          appId = "com.orcaslicer.OrcaSlicer";
+          sha256 = "sha256-8BQBAOs9JtAhtoNH2p1c6FNv540+g51qvYP0CydFcXU=";
+          bundle = "${pkgs.fetchurl {
+            url = "https://github.com/OrcaSlicer/OrcaSlicer/releases/download/v2.5.0-rc/OrcaSlicer-Linux-flatpak_V2.5.0-rc_x86_64.flatpak";
+            inherit sha256;
+          }}";
+        }
 
         # "camp.nook.nookdesktop" # App to play background music/noises from Animal Crossing.
       ];
