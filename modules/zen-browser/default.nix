@@ -77,8 +77,8 @@
           # Show this number of results for the url bar.
           # In Zen Browser you have to scroll to see all results.
           "browser.urlbar.maxRichResults" = 15;
-          # Show search suggestions above known websites in the url bar.
-          "browser.urlbar.showSearchSuggestionsFirst" = true;
+          # Show search suggestions below known websites in the url bar.
+          "browser.urlbar.showSearchSuggestionsFirst" = false;
           # Hide sponsored websites in the new tab page. More relevant for Firefox.
           "browser.newtabpage.activity-stream.showSponsored" = false;
           "browser.newtabpage.activity-stream.showSponsoredTopSites" = false;
