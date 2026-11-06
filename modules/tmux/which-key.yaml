@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=config.schema.yaml
+# yaml-language-server: $schema=/home/pebble/.config/tmux/plugins/tmux-which-key/config.schema.yaml
 command_alias_start_index: 200
 keybindings:
   # root_table: C-Space
@@ -288,6 +288,9 @@ items:
   - name: Toggle monitoring pane
     key: k
     command: run-shell "~/home/nix-config/modules/terminal/tmux/scripts/toggle_notify.sh"
+  - name: Toggle suspend [-p]
+    key: F12
+    command: switch-client -T root \; send-keys -K F12
   - name: Time
     key: t
     command: clock-mode

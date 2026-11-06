@@ -12,7 +12,7 @@
           owner = "tmux-plugins";
           repo = "tpm";
           rev = "master";
-          hash = "sha256-hW8mfwB8F9ZkTQ72WQp/1fy8KL1IIYMZBtZYIwZdMQc=";
+          hash = "sha256-oRKUZNyJYQXlkeQfbEYiltUEBpvdwn2SoEBWHVUNmrA=";
         }
       );
       ".config/tmux/plugins/tmux-which-key/config.yaml".source =
