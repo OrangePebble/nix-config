@@ -148,6 +148,7 @@ in
       ".config/ghostty/config".source = funcs.mkMutableConfigSymlink ./ghostty.config;
       ".config/foot/foot.ini".source = funcs.mkMutableConfigSymlink ./foot.ini;
       ".config/bat/config".source = funcs.mkMutableConfigSymlink ./bat-config;
+      ".config/lazygit/config.yml".source = funcs.mkMutableConfigSymlink ./lazygit.yml;
     };
   };
 

@@ -1,0 +1,12 @@
+os:
+  # `e` from the Files panel
+  edit: >-
+    [ -z "$NVIM" ] && (nvim -- {{filename}}) ||
+    (nvim --server "$NVIM" --remote-send "q" &&
+     nvim --server "$NVIM" --remote {{filename}})
+  # Editing from a selected line in a diff
+  editAtLine: >-
+    [ -z "$NVIM" ] && (nvim +{{line}} -- {{filename}}) ||
+    (nvim --server "$NVIM" --remote-send "q" &&
+     nvim --server "$NVIM" --remote {{filename}} &&
+     nvim --server "$NVIM" --remote-send ":{{line}}<CR>")
