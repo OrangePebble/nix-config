@@ -1,7 +1,6 @@
 {
   pkgs,
   funcs,
-  vars,
   ...
 }:
 {
@@ -17,11 +16,11 @@
     gcc # Required to compile treesitter parsers.
     gnumake # Required for LuaSnip.
     unzip # Used to install packages with Mason.
-    cargo # Used to install the nil Nix LSP.
     nodejs # For the bash LSP.
     python315 # For the python linter and formatter.
 
     # LSPs, DAPs, Linters and Formatters not installed with Mason.
+    nixd # Nix LSP with NixOS option documentation.
     statix
     # quickshell (.qml)
     # qmllint requires more configuration that I don't know how to do.
