@@ -61,10 +61,24 @@ if ! treefmt; then
 fi
 
 printf '[\033[94minfo\033[0m] %s\n' "Staging files..."
+if ! git submodule --quiet foreach --recursive 'git add --all'; then
+    printf '[\033[91merror\033[0m] %s\n' "Failed staging submodule files."
+    exit 1
+fi
 if ! git add --all; then
     printf '[\033[91merror\033[0m] %s\n' "Failed staging files."
     exit 1
 fi
+
+REBUILD_ARGS=(
+    # Explicitly include local submodule changes.
+    --flake "git+file://${PWD}?submodules=1#orange"
+    # Only use sudo for rebuild parts that need it.
+    --elevate sudo
+    --print-build-logs
+    --show-trace
+    --no-update-lock-file
+)
 
 printf '[\033[94minfo\033[0m] %s\n' "Rebuilding..."
 # When rebuilding, keep current specialisation.
@@ -72,7 +86,7 @@ CURRENT_SYSTEM=$(readlink -f /run/current-system)
 DEFAULT_SYSTEM=$(readlink -f /nix/var/nix/profiles/system)
 REBUILD_STATUS=1
 if [[ "$CURRENT_SYSTEM" == "$DEFAULT_SYSTEM" ]]; then
-    sudo nixos-rebuild switch --flake . --show-trace
+    nixos-rebuild switch "${REBUILD_ARGS[@]}"
     REBUILD_STATUS=$?
 else
     FOUND_SPECIALISATION=false
@@ -84,10 +98,10 @@ else
             # Because switching with '--specialisation' will apply the wrong boot options, I have
             # to build twice. Once to activate the specialisation, the other to apply the boot
             # options.
-            sudo nixos-rebuild boot --flake .
+            nixos-rebuild boot "${REBUILD_ARGS[@]}"
             REBUILD_STATUS=$?
             if [ "$REBUILD_STATUS" -eq 0 ]; then
-                sudo nixos-rebuild test --flake . --specialisation "$(basename "$SPECIALISATION")"
+                nixos-rebuild test "${REBUILD_ARGS[@]}" --specialisation "$(basename "$SPECIALISATION")"
                 REBUILD_STATUS=$?
             fi
             break
