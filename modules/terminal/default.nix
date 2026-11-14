@@ -174,9 +174,8 @@ in
     # Nix package version diff tool.
     nvd
 
-    # find replacement, used to update fetchgit references together with update-nix-fetchgit in nixr.
+    # find replacement.
     fd
-    update-nix-fetchgit
 
     # Library with a bunch of terminal inputs and outputs.
     gum

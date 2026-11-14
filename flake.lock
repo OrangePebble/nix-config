@@ -1,5 +1,56 @@
 {
   "nodes": {
+    "beets-maptag": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1768063060,
+        "narHash": "sha256-5l4Cefm8LVlH4UmQ8hPWTTsudpaRzd27Q/CEELpVDus=",
+        "owner": "p-laranjinha",
+        "repo": "beets-maptag",
+        "rev": "beae0aaaacf8cd0cbc5b9bb336dff888743c283f",
+        "type": "github"
+      },
+      "original": {
+        "owner": "p-laranjinha",
+        "ref": "master",
+        "repo": "beets-maptag",
+        "type": "github"
+      }
+    },
+    "beets-xtractor": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1716753433,
+        "narHash": "sha256-it4qQ2OS4qBEaGLJK8FVGpjlvg0MQICazV7TAM8lH9s=",
+        "owner": "adamjakab",
+        "repo": "BeetsPluginXtractor",
+        "rev": "c43418d7838c3a8e484de79c306c8bce9e63585d",
+        "type": "github"
+      },
+      "original": {
+        "owner": "adamjakab",
+        "ref": "v0.4.2",
+        "repo": "BeetsPluginXtractor",
+        "type": "github"
+      }
+    },
+    "beets-yearfixer": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1716754124,
+        "narHash": "sha256-TDRkCihp+hB33e9LCBpUye+KobpTPrDMutMa4zHJQ68=",
+        "owner": "adamjakab",
+        "repo": "BeetsPluginYearFixer",
+        "rev": "65d334dc78f16d52e01582ecdff7787c56ad648b",
+        "type": "github"
+      },
+      "original": {
+        "owner": "adamjakab",
+        "ref": "v0.0.5",
+        "repo": "BeetsPluginYearFixer",
+        "type": "github"
+      }
+    },
     "bun2nix": {
       "inputs": {
         "flake-parts": [
@@ -121,6 +172,40 @@
         "type": "github"
       }
     },
+    "dms-amd-gpu-monitor": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1788639852,
+        "narHash": "sha256-i27ApSb1kCbkiW2Avv16OAPY5zLQg/9qHAxdY38SJLs=",
+        "owner": "OrangePebble",
+        "repo": "dms-amd-gpu-monitor",
+        "rev": "728451c2b767ea31c65f1539e56973852d035036",
+        "type": "github"
+      },
+      "original": {
+        "owner": "OrangePebble",
+        "ref": "main",
+        "repo": "dms-amd-gpu-monitor",
+        "type": "github"
+      }
+    },
+    "dms-focusedapp-widget-remake": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1772673020,
+        "narHash": "sha256-Sjh3EacrJC9rusjAeigXtcycdVvyOaNqKHAoNv7Wtko=",
+        "owner": "OrangePebble",
+        "repo": "dms-focusedapp-widget-remake",
+        "rev": "d6b364b85c684806a87f9ec2212cbb9ad3aed9de",
+        "type": "github"
+      },
+      "original": {
+        "owner": "OrangePebble",
+        "ref": "master",
+        "repo": "dms-focusedapp-widget-remake",
+        "type": "github"
+      }
+    },
     "dms-plugin-registry": {
       "inputs": {
         "nixpkgs": [
@@ -139,6 +224,19 @@
         "owner": "AvengeMedia",
         "repo": "dms-plugin-registry",
         "type": "github"
+      }
+    },
+    "essentia-models": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1567609442,
+        "narHash": "sha256-xLx0LUwpTlTzKgbfemBDgSKQgtESzk1zooQuBAkN+oY=",
+        "type": "tarball",
+        "url": "https://essentia.upf.edu/svm_models/essentia-extractor-svm_models-v2.1_beta5.tar.gz"
+      },
+      "original": {
+        "type": "tarball",
+        "url": "https://essentia.upf.edu/svm_models/essentia-extractor-svm_models-v2.1_beta5.tar.gz"
       }
     },
     "flake-compat": {
@@ -229,6 +327,74 @@
       "original": {
         "owner": "hercules-ci",
         "repo": "flake-parts",
+        "type": "github"
+      }
+    },
+    "freecad-curves-wb": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1794491554,
+        "narHash": "sha256-CJmn6JK2kyp/GmRFoxIv7P+ZTVqah/CX4B3brukZH0g=",
+        "owner": "tomate44",
+        "repo": "CurvesWB",
+        "rev": "f16c6fddcd007247279fe968ba2ee3235917895e",
+        "type": "github"
+      },
+      "original": {
+        "owner": "tomate44",
+        "ref": "main",
+        "repo": "CurvesWB",
+        "type": "github"
+      }
+    },
+    "freecad-history-workbench": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1792033167,
+        "narHash": "sha256-0p/uHzDuFtKwEKMdWdA9xWLasC+mHe5kObUtoVutD5A=",
+        "owner": "eblanshey",
+        "repo": "HistoryWorkbench",
+        "rev": "d315787db57676f40c796123cf225f5a98fb77bd",
+        "type": "github"
+      },
+      "original": {
+        "owner": "eblanshey",
+        "ref": "master",
+        "repo": "HistoryWorkbench",
+        "type": "github"
+      }
+    },
+    "freecad-open-theme": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1792514893,
+        "narHash": "sha256-fE70AatGxUAonDREiFPNlPF+Ie6JKN4IGFAdtzSczuI=",
+        "owner": "obelisk79",
+        "repo": "OpenTheme",
+        "rev": "e516b65382f1b7210dab714fb88b43cbd319d3fe",
+        "type": "github"
+      },
+      "original": {
+        "owner": "obelisk79",
+        "ref": "main",
+        "repo": "OpenTheme",
+        "type": "github"
+      }
+    },
+    "freecad-tool-seek": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1787026596,
+        "narHash": "sha256-hYFHSZ0q+tbfjX1fiafzY39Y15/TJDDRV2tUWJqxpT0=",
+        "owner": "robdevtech",
+        "repo": "ToolSeek",
+        "rev": "3fcce7edf12277fb9f9c7159a37c1fabc998b491",
+        "type": "github"
+      },
+      "original": {
+        "owner": "robdevtech",
+        "ref": "main",
+        "repo": "ToolSeek",
         "type": "github"
       }
     },
@@ -429,6 +595,18 @@
         "type": "github"
       }
     },
+    "orca-slicer-flatpak": {
+      "flake": false,
+      "locked": {
+        "narHash": "sha256-p7/3HJiTqIkj2IYSmNm3ZPYoTIMx5BDI3JsizUuvfbw=",
+        "type": "file",
+        "url": "https://github.com/OrcaSlicer/OrcaSlicer/releases/download/v2.5.0-rc/OrcaSlicer-Linux-flatpak_V2.5.0-rc_x86_64.flatpak"
+      },
+      "original": {
+        "type": "file",
+        "url": "https://github.com/OrcaSlicer/OrcaSlicer/releases/download/v2.5.0-rc/OrcaSlicer-Linux-flatpak_V2.5.0-rc_x86_64.flatpak"
+      }
+    },
     "pi": {
       "inputs": {
         "bun2nix": "bun2nix",
@@ -499,9 +677,19 @@
     },
     "root": {
       "inputs": {
+        "beets-maptag": "beets-maptag",
+        "beets-xtractor": "beets-xtractor",
+        "beets-yearfixer": "beets-yearfixer",
         "direnv-instant": "direnv-instant",
         "dms": "dms",
+        "dms-amd-gpu-monitor": "dms-amd-gpu-monitor",
+        "dms-focusedapp-widget-remake": "dms-focusedapp-widget-remake",
         "dms-plugin-registry": "dms-plugin-registry",
+        "essentia-models": "essentia-models",
+        "freecad-curves-wb": "freecad-curves-wb",
+        "freecad-history-workbench": "freecad-history-workbench",
+        "freecad-open-theme": "freecad-open-theme",
+        "freecad-tool-seek": "freecad-tool-seek",
         "home-manager": "home-manager",
         "nix-alien": "nix-alien",
         "nix-flatpak": "nix-flatpak",
@@ -509,10 +697,12 @@
         "nixpkgs": "nixpkgs",
         "nixpkgs-stable": "nixpkgs-stable",
         "nur": "nur",
+        "orca-slicer-flatpak": "orca-slicer-flatpak",
         "pi": "pi",
         "plasma-manager": "plasma-manager",
         "quickshell": "quickshell",
         "sops-nix": "sops-nix",
+        "tmux-tpm": "tmux-tpm",
         "zen-browser": "zen-browser"
       }
     },
@@ -548,6 +738,23 @@
       "original": {
         "owner": "nix-systems",
         "repo": "default",
+        "type": "github"
+      }
+    },
+    "tmux-tpm": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1779036064,
+        "narHash": "sha256-oRKUZNyJYQXlkeQfbEYiltUEBpvdwn2SoEBWHVUNmrA=",
+        "owner": "tmux-plugins",
+        "repo": "tpm",
+        "rev": "e261deb1b47614eed3400089ce7197dc68acc4eb",
+        "type": "github"
+      },
+      "original": {
+        "owner": "tmux-plugins",
+        "ref": "master",
+        "repo": "tpm",
         "type": "github"
       }
     },

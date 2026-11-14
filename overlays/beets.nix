@@ -1,5 +1,5 @@
 # https://nixcademy.com/posts/mastering-nixpkgs-overlays-techniques-and-best-practice/
-final: prev: {
+inputs: final: prev: {
   # https://nixos.org/manual/nixpkgs/unstable/#how-to-override-a-python-package-for-all-python-versions-using-extensions
   # https://github.com/NixOS/nixpkgs/blob/nixos-unstable/pkgs/development/python-modules/beetcamp/default.nix
   # https://github.com/NixOS/nixpkgs/blob/nixos-unstable/pkgs/development/python-modules/beets-audible/default.nix
@@ -9,17 +9,12 @@ final: prev: {
     (python-final: python-prev: {
       # To overwrite instead of creating a new package:
       # fee = python-prev.foo.overridePythonAttrs (oldAttrs: rec {
-      beets-xtractor = python-prev.buildPythonPackage rec {
+      beets-xtractor = python-prev.buildPythonPackage {
         pname = "beets-xtractor";
         version = "v0.4.2";
         pyproject = true;
 
-        src = prev.fetchFromGitHub {
-          owner = "adamjakab";
-          repo = "BeetsPluginXtractor";
-          rev = version;
-          hash = "sha256-it4qQ2OS4qBEaGLJK8FVGpjlvg0MQICazV7TAM8lH9s=";
-        };
+        src = inputs.beets-xtractor;
 
         build-system = with python-prev; [
           setuptools
@@ -34,17 +29,12 @@ final: prev: {
           updateScript = python-prev.nix-update-script { };
         };
       };
-      beets-yearfixer = python-prev.buildPythonPackage rec {
+      beets-yearfixer = python-prev.buildPythonPackage {
         pname = "beets-yearfixer";
         version = "v0.0.5";
         pyproject = true;
 
-        src = prev.fetchFromGitHub {
-          owner = "adamjakab";
-          repo = "BeetsPluginYearFixer";
-          rev = version;
-          hash = "sha256-TDRkCihp+hB33e9LCBpUye+KobpTPrDMutMa4zHJQ68=";
-        };
+        src = inputs.beets-yearfixer;
 
         build-system = with python-prev; [
           setuptools
@@ -64,12 +54,7 @@ final: prev: {
         version = "master";
         pyproject = true;
 
-        src = prev.fetchFromGitHub {
-          owner = "p-laranjinha";
-          repo = "beets-maptag";
-          rev = "master";
-          hash = "sha256-5l4Cefm8LVlH4UmQ8hPWTTsudpaRzd27Q/CEELpVDus=";
-        };
+        src = inputs.beets-maptag;
 
         build-system = with python-prev; [
           setuptools

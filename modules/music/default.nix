@@ -1,5 +1,6 @@
 {
   pkgs,
+  inputs,
   pkgs-stable,
   funcs,
   vars,
@@ -57,10 +58,7 @@
     funcs.mkMutableConfigSymlink ./languagerewrite.yaml;
   hm.home.file.".config/beets/paths.yaml".text =
     let
-      essentia_models = fetchTarball {
-        url = "https://essentia.upf.edu/svm_models/essentia-extractor-svm_models-v2.1_beta5.tar.gz";
-        sha256 = "sha256:11ps1l4h8bl4l9rlvkhjs61908l18dh7mpq65brm8ki99hnp9g64";
-      };
+      essentia_models = inputs.essentia-models;
       streaming_extractor_music = "${funcs.mkMutableConfigSymlink ./essentia/streaming_extractor_music}";
     in
     ''

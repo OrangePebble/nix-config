@@ -156,13 +156,10 @@
         "com.vscodium.codium"
 
         # "com.orcaslicer.OrcaSlicer"
-        rec {
+        {
           appId = "com.orcaslicer.OrcaSlicer";
           sha256 = "sha256-8BQBAOs9JtAhtoNH2p1c6FNv540+g51qvYP0CydFcXU=";
-          bundle = "${pkgs.fetchurl {
-            url = "https://github.com/OrcaSlicer/OrcaSlicer/releases/download/v2.5.0-rc/OrcaSlicer-Linux-flatpak_V2.5.0-rc_x86_64.flatpak";
-            inherit sha256;
-          }}";
+          bundle = "${inputs.orca-slicer-flatpak}";
         }
 
         # "camp.nook.nookdesktop" # App to play background music/noises from Animal Crossing.

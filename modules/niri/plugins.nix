@@ -26,21 +26,11 @@
 
       amdGpuMonitorFork = {
         enable = true;
-        src = pkgs.fetchFromGitHub {
-          owner = "OrangePebble";
-          repo = "dms-amd-gpu-monitor";
-          rev = "main";
-          hash = "sha256-i27ApSb1kCbkiW2Avv16OAPY5zLQg/9qHAxdY38SJLs=";
-        };
+        src = inputs.dms-amd-gpu-monitor;
       };
       focusedAppRemake = {
         enable = true;
-        src = pkgs.fetchFromGitHub {
-          owner = "OrangePebble";
-          repo = "dms-focusedapp-widget-remake";
-          rev = "master";
-          hash = "sha256-Sjh3EacrJC9rusjAeigXtcycdVvyOaNqKHAoNv7Wtko=";
-        };
+        src = inputs.dms-focusedapp-widget-remake;
       };
     };
 

@@ -69,6 +69,59 @@
       url = "github:lukasl-dev/pi.nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    tmux-tpm = {
+      url = "github:tmux-plugins/tpm/master";
+      flake = false;
+    };
+
+    dms-amd-gpu-monitor = {
+      url = "github:OrangePebble/dms-amd-gpu-monitor/main";
+      flake = false;
+    };
+    dms-focusedapp-widget-remake = {
+      url = "github:OrangePebble/dms-focusedapp-widget-remake/master";
+      flake = false;
+    };
+
+    beets-xtractor = {
+      url = "github:adamjakab/BeetsPluginXtractor/v0.4.2";
+      flake = false;
+    };
+    beets-yearfixer = {
+      url = "github:adamjakab/BeetsPluginYearFixer/v0.0.5";
+      flake = false;
+    };
+    beets-maptag = {
+      url = "github:p-laranjinha/beets-maptag/master";
+      flake = false;
+    };
+    essentia-models = {
+      url = "https://essentia.upf.edu/svm_models/essentia-extractor-svm_models-v2.1_beta5.tar.gz";
+      flake = false;
+    };
+
+    freecad-open-theme = {
+      url = "github:obelisk79/OpenTheme/main";
+      flake = false;
+    };
+    freecad-history-workbench = {
+      url = "github:eblanshey/HistoryWorkbench/master";
+      flake = false;
+    };
+    freecad-tool-seek = {
+      url = "github:robdevtech/ToolSeek/main";
+      flake = false;
+    };
+    freecad-curves-wb = {
+      url = "github:tomate44/CurvesWB/main";
+      flake = false;
+    };
+
+    orca-slicer-flatpak = {
+      url = "file+https://github.com/OrcaSlicer/OrcaSlicer/releases/download/v2.5.0-rc/OrcaSlicer-Linux-flatpak_V2.5.0-rc_x86_64.flatpak";
+      flake = false;
+    };
   };
 
   outputs =
@@ -89,7 +142,7 @@
         inherit system;
         config.allowUnfree = true;
         allowUnfreePredicate = _: true;
-        overlays = [ (import ./overlays/beets.nix) ];
+        overlays = [ (import ./overlays/beets.nix inputs) ];
       };
     in
     {
